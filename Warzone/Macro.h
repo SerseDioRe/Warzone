@@ -4,7 +4,7 @@
 #define OFFSET_UAV1 0x14F7818C
 #define OFFSET_UAV2 0x14F78184
 #define OFFSET_ARRAY_NAMES 0x1B4B2097  // not updated
-#define OFFSET_ISFIRING 0x175F7348     // not updated
+#define OFFSET_ISFIRING 0x1760FD58
 
 //Options
 #define KEY_MODULE_EJECT  GetAsyncKeyState(VK_END) & 1
