@@ -10,10 +10,12 @@ public:
 		Uav1,
 		Uav2,
 		ArrayNames,
-		IsFiring
+		IsFiring,
+		Health,
+		CheckUav,
 	};
 private:
-	uintptr_t m_offsets[4] = { OFFSET_UAV1, OFFSET_UAV2, OFFSET_ARRAY_NAMES, OFFSET_ISFIRING };
+	uintptr_t m_offsets[6] = { OFFSET_UAV1, OFFSET_UAV2, OFFSET_ARRAY_NAMES, OFFSET_ISFIRING, OFFSET_HEALTH, OFFSET_CHECKUAV };
 public:
 	uintptr_t GetOffset(Offset offset);
 };

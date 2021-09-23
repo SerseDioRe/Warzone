@@ -2,13 +2,17 @@
 #include "pch.h"
 #include "Classes.h"
 #include "Offsets.h"
+#include "Memory.h"
 
 Offsets* offsets       = nullptr;
 ArrayNames* arrayNames = nullptr;
+NopInternal* NoCheckOnUav = nullptr;
+
 uintptr_t   moduleBase = 0;
 bool              bUav = false;
 int           uavValue = 0;
 int          uavValue2 = 2;
+int          health    = 0;
 
 DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 {
@@ -29,12 +33,17 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 #endif // DEBUG
 
     offsets = new Offsets();
+    NoCheckOnUav = new NopInternal((BYTE*)moduleBase + offsets->GetOffset(Offsets::CheckUav), 3);
 
-	while (!KEY_MODULE_EJECT)
+	while(!KEY_MODULE_EJECT)
 	{
+#ifdef _DEBUG
         arrayNames = (ArrayNames*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::ArrayNames));
+#endif // _DEBUG
+
         uavValue   = *(int*)(moduleBase + offsets->GetOffset(Offsets::Uav1));
         uavValue2  = *(int*)(moduleBase + offsets->GetOffset(Offsets::Uav2));
+        health     = *(int*)(moduleBase + offsets->GetOffset(Offsets::Health));
 
 #ifdef _DEBUG
         /*if (KEY_PRINT_ENTITIES)
@@ -51,13 +60,22 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
         if(KEY_UAV_MANAGER)
             bUav = !bUav;
 
-        if(bUav)
+        if (bUav)
         {
-            if (uavValue >= 3 && uavValue <= 5)
-                *(int*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::Uav1)) = 6;
+            if (health >= 0 && health <= 100)
+            {
+                if (uavValue >= 3 && uavValue <= 5)
+                    *(int*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::Uav1)) = 6;
 
-            if (uavValue2 == 0 || uavValue2 == 1)
-                *(int*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::Uav2)) = 33619969;
+                if (uavValue2 == 0 || uavValue2 == 1)
+                {
+                    *(int*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::Uav2)) = 33619969;
+                    NoCheckOnUav->enable();
+                }
+            }
+            else
+                if(NoCheckOnUav->IsEnabled())
+                    NoCheckOnUav->disable();
         }
 	}
 

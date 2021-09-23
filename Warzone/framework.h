@@ -4,3 +4,4 @@
 // File di intestazione di Windows
 #include <windows.h>
 #include <iostream>
+#include <vector>

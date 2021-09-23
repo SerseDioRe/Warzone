@@ -16,6 +16,12 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::IsFiring:
 		return m_offsets[Offset::IsFiring];
 		break;
+	case Offsets::Health:
+		return m_offsets[Offset::Health];
+		break;
+	case Offsets::CheckUav:
+		return m_offsets[Offset::CheckUav];
+		break;
 	default:
 		break;
 	}

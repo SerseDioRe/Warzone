@@ -156,11 +156,13 @@
     <ClInclude Include="Classes.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Macro.h" />
+    <ClInclude Include="Memory.h" />
     <ClInclude Include="Offsets.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Offsets.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
