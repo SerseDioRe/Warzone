@@ -4,25 +4,26 @@ uintptr_t Offsets::GetOffset(Offset offset)
 {
 	switch (offset)
 	{
-	case Offsets::Uav1:
-		return m_offsets[Offset::Uav1];
-		break;
-	case Offsets::Uav2:
-		return m_offsets[Offset::Uav2];
-		break;
-	case Offsets::ArrayNames:
-		return m_offsets[Offset::ArrayNames];
-		break;
-	case Offsets::IsFiring:
-		return m_offsets[Offset::IsFiring];
-		break;
-	case Offsets::Health:
-		return m_offsets[Offset::Health];
-		break;
-	case Offsets::CheckUav:
-		return m_offsets[Offset::CheckUav];
+	case Offsets::CG_T:
+		return m_offsets[Offset::CG_T];
 		break;
 	default:
 		break;
 	}
+}
+
+uintptr_t Offsets::FindDMAAddy(uintptr_t ptr, std::vector<unsigned int> offsets)
+{
+	if (ptr != 0)
+	{
+		uintptr_t addr = ptr;
+		for (unsigned int i = 0; i < offsets.size(); ++i)
+		{
+			addr = *(uintptr_t*)addr;
+			addr += offsets[i];
+		}
+		return addr;
+	}
+	else
+		return 0;
 }

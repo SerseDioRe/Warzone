@@ -7,15 +7,11 @@ class Offsets
 public:
 	enum Offset
 	{
-		Uav1,
-		Uav2,
-		ArrayNames,
-		IsFiring,
-		Health,
-		CheckUav,
+		CG_T,
 	};
 private:
-	uintptr_t m_offsets[6] = { OFFSET_UAV1, OFFSET_UAV2, OFFSET_ARRAY_NAMES, OFFSET_ISFIRING, OFFSET_HEALTH, OFFSET_CHECKUAV };
+	uintptr_t m_offsets[3] = { ADDRESS_CG_T };
 public:
 	uintptr_t GetOffset(Offset offset);
+	uintptr_t FindDMAAddy(uintptr_t ptr, std::vector<unsigned int> offsets);
 };

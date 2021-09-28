@@ -5,14 +5,11 @@
 #include "Memory.h"
 
 Offsets* offsets       = nullptr;
-ArrayNames* arrayNames = nullptr;
-NopInternal* NoCheckOnUav = nullptr;
 
 uintptr_t   moduleBase = 0;
+uintptr_t           cg = 0;
 bool              bUav = false;
-int           uavValue = 0;
-int          uavValue2 = 2;
-int          health    = 0;
+int             health = 0;
 
 DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 {
@@ -28,54 +25,25 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
         Sleep(30);
     }
 
-#ifdef DEBUG
-    PRINT_WELCOME;
-#endif // DEBUG
-
     offsets = new Offsets();
-    NoCheckOnUav = new NopInternal((BYTE*)moduleBase + offsets->GetOffset(Offsets::CheckUav), 3);
 
 	while(!KEY_MODULE_EJECT)
 	{
-#ifdef _DEBUG
-        arrayNames = (ArrayNames*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::ArrayNames));
-#endif // _DEBUG
-
-        uavValue   = *(int*)(moduleBase + offsets->GetOffset(Offsets::Uav1));
-        uavValue2  = *(int*)(moduleBase + offsets->GetOffset(Offsets::Uav2));
-        health     = *(int*)(moduleBase + offsets->GetOffset(Offsets::Health));
-
-#ifdef _DEBUG
-        /*if (KEY_PRINT_ENTITIES)
-        {
-            for (int i = 0; i < 150; i++)
-            {
-                Entity* currentEntity = new Entity();
-                memcpy(currentEntity->name, (char*)((uintptr_t)arrayNames + (i * 0x268) + 0x0), 16);
-                std::cout << "#" << i << " " << currentEntity->name << '\n';
-            }
-        }*/
-#endif // _DEBUG
+        cg         = (uintptr_t)(moduleBase + offsets->GetOffset(Offsets::CG_T));
+        health     = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x3B4 }));
 
         if(KEY_UAV_MANAGER)
             bUav = !bUav;
 
         if (bUav)
         {
-            if (health >= 0 && health <= 100)
+            if (cg != 0) 
             {
-                if (uavValue >= 3 && uavValue <= 5)
-                    *(int*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::Uav1)) = 6;
-
-                if (uavValue2 == 0 || uavValue2 == 1)
+                if (health >= 0 && health <= 100)
                 {
-                    *(int*)((uintptr_t)moduleBase + offsets->GetOffset(Offsets::Uav2)) = 33619969;
-                    NoCheckOnUav->enable();
+                    *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x45C })) = 33619969;
                 }
             }
-            else
-                if(NoCheckOnUav->IsEnabled())
-                    NoCheckOnUav->disable();
         }
 	}
 
