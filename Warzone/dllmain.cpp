@@ -11,6 +11,8 @@ uintptr_t           cg = 0;
 bool              bUav = false;
 int             health = 0;
 
+// ingame 17084918
+
 DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 {
 #ifdef _DEBUG
@@ -30,7 +32,7 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 	while(!KEY_MODULE_EJECT)
 	{
         cg         = (uintptr_t)(moduleBase + offsets->GetOffset(Offsets::CG_T));
-        health     = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x3B4 }));
+        health     = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x25C }));
 
         if(KEY_UAV_MANAGER)
             bUav = !bUav;
@@ -41,7 +43,7 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
             {
                 if (health >= 0 && health <= 100)
                 {
-                    *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x45C })) = 33619969;
+                    *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x304 })) = 33619969;
                 }
             }
         }
