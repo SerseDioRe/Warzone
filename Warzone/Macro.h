@@ -4,7 +4,7 @@
 #define ADDRESS_CG_T 0x1745E5E0
 
 //Options
-#define KEY_MODULE_EJECT  GetAsyncKeyState(VK_END) & 1
+#define KEY_MODULE_EJECT GetAsyncKeyState(VK_END) & 1
 #define KEY_UAV_MANAGER GetAsyncKeyState(VK_F4) & 1
 
 /* IT WORKS FOR 2 VERSIONS
