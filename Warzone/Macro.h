@@ -27,6 +27,19 @@ xxxxxxxxxxxx ? ? ? ? ? xxxx
 E8 ? ? ? ? 48 8D 05 ? ? ? ? 48 63 CE
 */
 
+/* IT WORKS FOR 2 VERSIONS
+1 asm op
+E9 ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? 40 55 53 48 8D 6C 24 ?
+
+text:000000000411F740                         sub_411F740     proc near
+.text:000000000411F740 48 83 EC 28                             sub     rsp, 28h
+.text:000000000411F744 E8 A7 4D BA FE                          call    sub_2CC44F0
+.text:000000000411F749 8B C8                                   mov     ecx, eax
+.text:000000000411F74B 48 83 C4 28                             add     rsp, 28h
+.text:000000000411F74F E9 0C 17 7C 00                          jmp     sub_48E0E60    =>>>
+.text:000000000411F74F                         sub_411F740     endp
+*/
+
 /* IT WORKS ONLY FOR 1 VERSION
 3 asm op
 \x48\x8D\x00\x00\x00\x00\x00\x48\x03\xC8\xE9
