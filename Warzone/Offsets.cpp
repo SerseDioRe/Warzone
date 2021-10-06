@@ -7,6 +7,9 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::CG_T:
 		return m_offsets[Offset::CG_T];
 		break;
+	case Offsets::GAMEMODE:
+		return m_offsets[Offset::GAMEMODE];
+		break;
 	default:
 		break;
 	}

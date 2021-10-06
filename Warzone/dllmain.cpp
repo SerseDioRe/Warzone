@@ -4,6 +4,13 @@
 #include "Offsets.h"
 #include "Memory.h"
 #include <psapi.h>
+#include <process.h>
+
+#define RVA(addr, size) ((uintptr_t)((UINT_PTR)(addr) + *(PINT)((UINT_PTR)(addr) + ((size) - sizeof(INT))) + (size)))
+
+#define INRANGE(x,a,b)	(x >= a && x <= b) 
+#define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
+#define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
 
 Offsets* offsets = nullptr;
 
@@ -11,12 +18,7 @@ uintptr_t   moduleBase = 0;
 uintptr_t           cg = 0;
 bool              bUav = false;
 int             health = 0;
-
-#define RVA(addr, size) ((uintptr_t)((UINT_PTR)(addr) + *(PINT)((UINT_PTR)(addr) + ((size) - sizeof(INT))) + (size)))
-
-#define INRANGE(x,a,b)	(x >= a && x <= b) 
-#define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
-#define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
+int             GameMode = 0;
 
 __int64 find_pattern(__int64 range_start, __int64 range_end, const char* pattern) {
     const char* pat = pattern;
@@ -59,13 +61,60 @@ __int64 find_pattern(__int64 range_start, __int64 range_end, const char* pattern
     return NULL;
 }
 
-DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
+ULONG WINAPI Init()
+{
+    MessageBox(0, "Injected!", "SUCCESS", MB_ICONINFORMATION);
+
+    while (moduleBase == 0)
+    {
+        moduleBase = (uintptr_t)GetModuleHandle(NULL);
+        Sleep(30);
+    }
+
+    offsets = new Offsets();
+
+    while (!KEY_MODULE_EJECT)
+    {
+        cg = (uintptr_t)(moduleBase + offsets->GetOffset(Offsets::CG_T));
+        GameMode = *(int*)(moduleBase + offsets->GetOffset(Offsets::GAMEMODE));
+
+#ifdef _DEBUG
+        std::cout << *(int*)offset2 << '\n';
+#endif
+
+        if (KEY_UAV_MANAGER)
+            bUav = !bUav;
+
+        if (bUav)
+        {
+            if (GameMode > 1)
+            {
+                if (cg != 0)
+                {
+                    health = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x25C }));
+                    if (health >= 0 && health <= 100)
+                    {
+                        *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x304 })) = 33619969;
+                    }
+                }
+            }
+        }
+
+        Sleep(1);
+    }
+   
+    return true;
+}
+
+/*DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 {
 #ifdef _DEBUG
     AllocConsole();
     FILE* f;
     freopen_s(&f, "CONOUT$", "w", stdout);
 #endif // _DEBUG
+
+    MessageBox(0, "Injected!", "SUCCESS", MB_ICONINFORMATION);
 
     while (moduleBase == 0)
     {
@@ -77,9 +126,9 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
     printf("[+] base: 0x%llX\n", moduleBase);
 #endif
 
-    offsets = new Offsets();
+    offsets = new Offsets();*/
 
-    MODULEINFO moduleInfo;
+    /*MODULEINFO moduleInfo;
     if (!GetModuleInformation((HANDLE)-1, GetModuleHandle(NULL), &moduleInfo, sizeof(MODULEINFO)) || !moduleInfo.lpBaseOfDll) {
 #ifdef _DEBUG
         printf("[-] failed to get base module information");
@@ -118,11 +167,13 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 #ifdef _DEBUG
     printf("[+] uav offset: 0x%llX (0x%llX)\n", offset, offset - moduleBase);
     printf("[+] uav offset: 0x%llX (0x%llX)\n", offset2, offset2 - moduleBase);
-#endif
+#endif*/
 
-    while (!KEY_MODULE_EJECT)
+    /*while (!KEY_MODULE_EJECT)
     {
-        cg = (uintptr_t)(moduleBase + (offset - moduleBase));
+        //cg = (uintptr_t)(moduleBase + (offset - moduleBase));
+        cg = (uintptr_t)(moduleBase + offsets->GetOffset(Offsets::CG_T));
+        GameMode = *(int*)(moduleBase + offsets->GetOffset(Offsets::GAMEMODE));
 
 #ifdef _DEBUG
         std::cout << *(int*)offset2 << '\n';
@@ -133,15 +184,19 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 
         if (bUav)
         {
-            if (cg != 0) 
+            if (GameMode > 1)
             {
-                health = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x25C }));
-                if (health >= 0 && health <= 100) 
+                if (cg != 0)
                 {
-                    *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x304 })) = 33619969;
+                    health = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x25C }));
+                    if (health >= 0 && health <= 100)
+                    {
+                        *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x304 })) = 33619969;
+                    }
                 }
             }
         }
+
         Sleep(1);
     }
 
@@ -152,22 +207,18 @@ DWORD WINAPI CallOfDutyModernWarfare(HMODULE hModule)
 
     FreeLibraryAndExitThread(hModule, 0);
     return 0;
-}
+}*/
 
-BOOL APIENTRY DllMain(HMODULE hModule,
-    DWORD  ul_reason_for_call,
-    LPVOID lpReserved
-)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved)
 {
-    switch (ul_reason_for_call)
+    switch (reason)
     {
     case DLL_PROCESS_ATTACH:
-        CloseHandle(CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)CallOfDutyModernWarfare, hModule, 0, nullptr));
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
+        _beginthreadex(0, 0, (_beginthreadex_proc_type)Init, 0, 0, 0);
         break;
     }
+
     return TRUE;
 }
+
 
