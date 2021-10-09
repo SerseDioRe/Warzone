@@ -63,8 +63,6 @@ __int64 find_pattern(__int64 range_start, __int64 range_end, const char* pattern
 
 ULONG WINAPI Init()
 {
-    MessageBox(0, "Injected!", "SUCCESS", MB_ICONINFORMATION);
-
     while (moduleBase == 0)
     {
         moduleBase = (uintptr_t)GetModuleHandle(NULL);
