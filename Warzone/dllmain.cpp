@@ -12,6 +12,10 @@
 #define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
 #define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
 
+#define OFFSET_CHARACTERINFO_RECOIL 0x810BC //0F 85 ? ? ? ? 0F 2E 80 ? ? ? ? 0F 85 ? ? ? ? 4C 8D 96 ? ? ? ?
+
+#define QWORD unsigned __int64
+
 Offsets* offsets = nullptr;
 
 uintptr_t   moduleBase = 0;
@@ -19,6 +23,168 @@ uintptr_t           cg = 0;
 bool              bUav = false;
 int             health = 0;
 int             GameMode = 0;
+bool noRecoil = false;
+
+
+uint64_t DecryptCharacterInfoPtr(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
+{
+    uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
+
+    RBX = *(uint64_t*)(imageBase + 0x18003B58);
+    if (RBX == 0) {
+        return 0;
+    }
+    uint64_t RSP_0x58 = imageBase;
+    RSP_0x58 = 0xC; // mov byte ptr [rsp+58h],0Ch
+    // movzx eax,byte ptr [rsp+58h]
+    RAX = _rotr64(RAX, 0xAD);
+    // movzx eax,al
+    RDX = peb; // mov rdx,gs:[rax]
+    RAX = RBX;
+    RAX >>= 0x20;
+    RBX ^= RAX;
+    RAX = RBX;
+    RAX >>= 0x28;
+    RCX = 0x0;
+    RAX ^= RDX;
+    RCX = _rotl64(RCX, 0x10);
+    RCX ^= *(uint64_t*)(imageBase + 0x73A10F3);
+    RAX ^= RBX;
+    RDX = 0xC3A82EA730153563;
+    RAX *= RDX;
+    RCX = _byteswap_uint64(RCX);
+    RDX = 0x7585B6D633F56AA9;
+    RAX += RDX;
+    RBX = *(uint64_t*)(RCX + 0x7);
+    RBX *= RAX;
+    return RBX;
+
+    /*uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
+
+    RBX = *(uint64_t*)(imageBase + 0x18003B58);   // mov     rbx, cs:qword_18003B58
+    RDX = peb;                                    // mov     rdx, gs:[rax]
+    if (RBX == 0) {                               // test    rbx, rbx
+        return 0;
+    }
+    RCX = *(uint64_t*)(imageBase + 0x168);        // mov     rcx, [rbp+168h]  ??
+    RAX = RBX;                                    // mov     rax, rbx
+    RAX >>= 0x20;                                 // shr     rax, 20h
+    RBX ^= RAX;                                   // xor     rbx, rax
+    RAX = (imageBase + 0x3BB);                    // lea     rax, cs:3BBh
+    RCX -= RAX;                                   // sub     rcx, rax
+    RAX = RBX;                                    // mov     rax, rbx
+    RAX >= 0x28;                                  // shr     rax, 28h
+    RCX &= 0x0FFFFFFFFC0000000;                   // and     rcx, 0FFFFFFFFC0000000h
+    RAX ^= RDX;                                   // xor     rax, rdx
+    RCX = _rotl64(RCX, 0x10);                     // rol     rcx, 10h
+    RCX ^= *(uint64_t*)(imageBase + 0x73A10F3);   // xor     rcx, cs:qword_73A10F3
+    RAX ^= RBX;                                   // xor     rax, rbx
+    RDX = 0x0C3A82EA730153563;                    // mov     rdx, 0C3A82EA730153563h
+    RAX *= RDX;                                   // imul    rax, rdx
+    _byteswap_uint64(RCX);                        // bswap   rcx
+    RDX = 0x7585B6D633F56AA9;                     // mov     rdx, 7585B6D633F56AA9h
+    RAX += RDX;                                   // add     rax, rdx
+    RBX = *(uint64_t*)(RCX + 0x7);                // mov     rbx, [rcx+7]
+    RBX *= RAX;                                   // imul    rbx, rax
+    return RBX;*/
+
+
+    /*uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
+
+    RBX = *(uint64_t*)(imageBase + 0x17E21C88); //driver::read<uint64_t>(imageBase + 0x18044A88); 48 8B 1D ? ? ? ? 89 7D ? || 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
+    if (RBX == 0) {
+        return 0;
+    }
+    RCX = peb;
+    RAX = 0x507343EDDC5832C3;
+    RCX *= RAX;
+    RAX = 0x214C49CDB728D2B5;
+    RBX *= RAX;
+    // lea     rax, cs:0E01h
+    RBX -= RCX;
+    // mov     rcx, [rbp+5Fh]
+    RCX -= RAX;
+    RAX = RBX;
+    RAX >>= 0x20;
+    RCX &= 0x0FFFFFFFFC0000000;
+    RAX ^= RBX;
+    RCX = _rotl64(RCX, 0x10);
+    RCX ^= *(uint64_t*)(imageBase + 0x71BC0E7);
+    RCX = ~RCX;
+    RBX = *(uint64_t*)(RCX + 0x13); 
+    RBX *= RAX;
+    RAX = RBX;
+    RAX >>= 0x16;
+    RBX ^= RAX;
+    RAX = RBX;
+    RAX >>= 0x2C;
+    RBX ^= RAX;
+    return RBX;*/
+
+    /*RBX = *(uint64_t*)(imageBase + 0x18044A88); //driver::read<uint64_t>(imageBase + 0x18044A88); 48 8B 1D ? ? ? ? 89 7D ?
+    if (RBX == 0) {
+        return 0;
+    }
+    RAX = imageBase;
+    RDX = RBX + RAX;
+    RAX = 0xF7722301C0F805AF;
+    RDX *= RAX;
+    RAX = RDX;
+    RAX >>= 0x5;
+    RDX ^= RAX;
+    RAX = RDX;
+    RAX >>= 0xA;
+    RDX ^= RAX;
+    RAX = RDX;
+    RAX >>= 0x14;
+    RDX ^= RAX;
+    RAX = RDX;
+    RAX >>= 0x28;
+    RDX ^= RAX;
+    RAX = RDX;
+    RAX >>= 0x12;
+    RDX ^= RAX;
+    RAX = RDX;
+    RCX = 0x0;
+    RAX >>= 0x24;
+    RCX = _rotl64(RCX, 0x10);
+    RAX ^= RDX;
+    RCX ^= *(uint64_t*)(imageBase + 0x7425100); //driver::read<uint64_t>(imageBase + 0x7425100);
+    RCX = ~RCX;
+    RBX = *(uint64_t*)(RCX + 0xB); //driver::read<uint64_t>(RCX + 0xB);
+    RBX *= RAX;
+    RAX = 0xF02663FD564FD7EB;
+    RBX *= RAX;
+    return RBX;*/
+}
+    
+
+void NoRecoil()
+{
+    auto not_peb = __readgsqword(0x60);
+    uint64_t characterInfo_ptr = DecryptCharacterInfoPtr(moduleBase, not_peb);
+    if (characterInfo_ptr)
+    {
+        // up, down
+        QWORD r12 = characterInfo_ptr;
+        r12 += OFFSET_CHARACTERINFO_RECOIL;
+        QWORD rsi = r12 + 0x4;
+        DWORD edx = *(QWORD*)(r12 + 0xC);
+        DWORD ecx = (DWORD)r12;
+        ecx ^= edx;
+        DWORD eax = (DWORD)((QWORD)ecx + 0x2);
+        eax *= ecx;
+        ecx = (DWORD)rsi;
+        ecx ^= edx;
+        DWORD udZero = eax;
+        //left, right
+        eax = (DWORD)((QWORD)ecx + 0x2);
+        eax *= ecx;
+        DWORD lrZero = eax;
+        *(DWORD*)(r12) = udZero;
+        *(DWORD*)(rsi) = lrZero;
+    }
+}
 
 __int64 find_pattern(__int64 range_start, __int64 range_end, const char* pattern) {
     const char* pat = pattern;
@@ -61,6 +227,19 @@ __int64 find_pattern(__int64 range_start, __int64 range_end, const char* pattern
     return NULL;
 }
 
+bool Updated()
+{
+    BYTE m_checkUpdate[2] = { 0x74, 0x1D };
+
+    for (int count{ 0 }; count < 2; ++count)
+    {
+        if (((BYTE*)(moduleBase + offsets->GetOffset(Offsets::CHECKUPDATE)))[count] == m_checkUpdate[count])
+            return true;
+    }
+
+    return false;
+}
+
 ULONG WINAPI Init()
 {
     while (moduleBase == 0)
@@ -70,6 +249,9 @@ ULONG WINAPI Init()
     }
 
     offsets = new Offsets();
+
+    if (!Updated())
+        return NULL;
 
     while (!KEY_MODULE_EJECT)
     {
@@ -82,6 +264,9 @@ ULONG WINAPI Init()
 
         if (KEY_UAV_MANAGER)
             bUav = !bUav;
+
+        if (KEY_RECOIL_MANAGER)
+            noRecoil = !noRecoil;
 
         if (bUav)
         {
@@ -96,6 +281,12 @@ ULONG WINAPI Init()
                     }
                 }
             }
+        }
+
+        if(noRecoil)
+        {
+            if(GameMode > 1)
+               NoRecoil();
         }
 
         Sleep(1);

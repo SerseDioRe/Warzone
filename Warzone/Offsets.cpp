@@ -10,6 +10,9 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::GAMEMODE:
 		return m_offsets[Offset::GAMEMODE];
 		break;
+	case Offsets::CHECKUPDATE:
+		return m_offsets[Offset::CHECKUPDATE];
+		break;
 	default:
 		break;
 	}

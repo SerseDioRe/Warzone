@@ -1,12 +1,16 @@
 ﻿#pragma once
 
 //Offsets
-#define ADDRESS_CG_T 0x18052DC0
-#define ADDRESS_GAMEMODE 0x17C6B338
+#define ADDRESS_CG_T 0x18011E90
+#define ADDRESS_GAMEMODE 0x17C2A488
+#define ADDRESS_CHECK_UPDATE 0x4430F05 
+
+
 
 //Options
 #define KEY_MODULE_EJECT GetAsyncKeyState(VK_END) & 1
 #define KEY_UAV_MANAGER GetAsyncKeyState(VK_F4) & 1
+#define KEY_RECOIL_MANAGER GetAsyncKeyState(VK_F5) & 1
 
 /* IT WORKS FOR 2 VERSIONS
 5 asm op but is head function, real offset is + 0xA
