@@ -1,11 +1,9 @@
 ﻿#pragma once
 
 //Offsets
-#define ADDRESS_CG_T 0x1804CCC0
-#define ADDRESS_GAMEMODE 0x17C652B8
-#define ADDRESS_CHECK_UPDATE 0x440A985
-
-
+#define ADDRESS_CG_T 0x180C2110
+#define ADDRESS_GAMEMODE 0x17CCFF78
+#define ADDRESS_CHECK_UPDATE 0x4436DA2
 
 //Options
 #define KEY_MODULE_EJECT GetAsyncKeyState(VK_END) & 1

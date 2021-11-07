@@ -12,7 +12,7 @@
 #define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
 #define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
 
-#define OFFSET_CHARACTERINFO_RECOIL 0x6C764 //0F 85 ? ? ? ? 0F 2E 80 ? ? ? ? 0F 85 ? ? ? ? 4C 8D 96 ? ? ? ?
+#define OFFSET_CHARACTERINFO_RECOIL 0x0D00 //0F 85 ? ? ? ? 0F 2E 80 ? ? ? ? 0F 85 ? ? ? ? 4C 8D 96 ? ? ? ?
 
 #define QWORD unsigned __int64
 
@@ -29,6 +29,162 @@ bool noRecoil = false;
 uint64_t DecryptCharacterInfoPtr(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
 {
     uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
+
+    RBX = *(uint64_t*)(imageBase + 0x180B3DD8);
+    if (RBX == 0) {
+        return 0;
+    }
+    RCX = peb;
+    RCX = ~RCX;
+    RCX = ~RCX;
+    //RAX = *(uint64_t*)(imageBase + 0x5E8F6C41);
+    RCX += RAX;
+    //RAX = *(uint64_t*)(imageBase + 0x0E93);
+    RBX ^= RCX;
+    RCX -= RAX;
+    RAX = RBX;
+    RCX = 0;//RCX &= 0x0FFFFFFFFC0000000;
+    RAX >>= 0x20;
+    RAX ^= RBX;
+    RCX = _rotl64(RCX, 0x10);
+    RCX ^= *(uint64_t*)(imageBase + 0x721C115);
+    RCX = ~RCX;
+    RCX = *(uint64_t*)(RCX + 0x13);
+    RCX *= RAX;
+    RAX = 0x0C5E5921E8641A74B;
+    RCX *= RAX;
+    RAX = RCX;
+    RAX >>= 0x1D;
+    RCX ^= RAX;
+    RAX = 0x819CD716530F4F07;
+    RBX = RCX;
+    RBX >>= 0x3A;
+    RBX ^= RCX;
+    RBX *= RAX;
+    return RBX;
+
+/*
+mov     rbx, cs:qword_180B3DD8
+.text:0000000002536E50                 mov     [rsp+250h+var_1F0], 0Ch
+.text:0000000002536E55                 movzx   eax, [rsp+250h+var_1F0]
+.text:0000000002536E5A                 ror     al, 5Dh
+.text:0000000002536E5D                 movzx   eax, al
+.text:0000000002536E60                 mov     rcx, gs:[rax]
+.text:0000000002536E64                 not     rcx
+.text:0000000002536E67                 test    rbx, rbx
+.text:0000000002536E6A                 jz      short loc_2536EE4
+.text:0000000002536E6C                 not     rcx
+.text:0000000002536E6F                 lea     rax, cs:5E8F6C41h
+.text:0000000002536E76                 add     rcx, rax
+.text:0000000002536E79                 lea     rax, cs:0E93h
+.text:0000000002536E80                 xor     rbx, rcx
+.text:0000000002536E83                 mov     rcx, [rbp+158h]
+.text:0000000002536E8A                 sub     rcx, rax
+.text:0000000002536E8D                 mov     rax, rbx
+.text:0000000002536E90                 and     rcx, 0FFFFFFFFC0000000h
+.text:0000000002536E97                 shr     rax, 20h
+.text:0000000002536E9B                 xor     rax, rbx
+.text:0000000002536E9E                 rol     rcx, 10h
+.text:0000000002536EA2                 xor     rcx, cs:qword_721C115
+.text:0000000002536EA9                 not     rcx
+.text:0000000002536EAC                 mov     rcx, [rcx+13h]
+.text:0000000002536EB0                 imul    rcx, rax
+.text:0000000002536EB4                 mov     rax, 0C5E5921E8641A74Bh
+.text:0000000002536EBE                 imul    rcx, rax
+.text:0000000002536EC2                 mov     rax, rcx
+.text:0000000002536EC5                 shr     rax, 1Dh
+.text:0000000002536EC9                 xor     rcx, rax
+.text:0000000002536ECC                 mov     rax, 819CD716530F4F07h
+.text:0000000002536ED6                 mov     rbx, rcx
+.text:0000000002536ED9                 shr     rbx, 3Ah
+.text:0000000002536EDD                 xor     rbx, rcx
+.text:0000000002536EE0                 imul    rbx, rax
+*/
+
+    /*uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
+
+    RBX = *(uint64_t*)(imageBase + 0x17DE5A08);
+    if (RBX == 0) {
+        return 0;
+    }
+    R8 = imageBase;
+    RAX += 0x13;
+    // movzx eax,al
+    RCX = peb; // mov rcx,gs:[rax]
+    RAX = RBX;
+    RDX = 0x5DCE6A293BD158C7;
+    RAX >>= 0x6;
+    RBX ^= RAX;
+    RAX = RBX;
+    RAX >>= 0xC;
+    RBX ^= RAX;
+    RAX = RBX;
+    RAX >>= 0x18;
+    RBX ^= RAX;
+    RAX = RBX;
+    RAX >>= 0x30;
+    RAX ^= RBX;
+    RAX -= RCX;
+    RAX *= RDX;
+    RAX -= R8;
+    RAX += 0xFFFFFFFFFFFF8DA5;
+    RCX += RAX;
+    RAX = RCX;
+    R8 = 0x0;
+    RAX >>= 0x28;
+    R8 = _rotl64(R8, 0x10);
+    RAX ^= RCX;
+    R8 ^= *(uint64_t*)(imageBase + 0x71BB111);
+    R8 = ~R8;
+    RBX = *(uint64_t*)(R8 + 0x17);
+    RBX *= RAX;
+    return RBX;*/
+
+
+    /*
+    mov     rbx, cs:qword_17DE5A08
+.text:000000000217685D                 mov     [rsp+270h+var_220], 4Dh ; 'M'
+.text:0000000002176862                 movzx   eax, [rsp+270h+var_220]
+.text:0000000002176867                 lea     r8, cs:0
+.text:000000000217686E                 add     eax, 13h
+.text:0000000002176871                 mov     [rbp+170h+var_1E0], r8
+.text:0000000002176875                 movzx   eax, al
+.text:0000000002176878                 mov     rcx, gs:[rax]
+.text:000000000217687C                 test    rbx, rbx
+.text:000000000217687F                 jz      short loc_21768FE
+.text:0000000002176881                 mov     rax, rbx
+.text:0000000002176884                 mov     rdx, 5DCE6A293BD158C7h
+.text:000000000217688E                 shr     rax, 6
+.text:0000000002176892                 xor     rbx, rax
+.text:0000000002176895                 mov     rax, rbx
+.text:0000000002176898                 shr     rax, 0Ch
+.text:000000000217689C                 xor     rbx, rax
+.text:000000000217689F                 mov     rax, rbx
+.text:00000000021768A2                 shr     rax, 18h
+.text:00000000021768A6                 xor     rbx, rax
+.text:00000000021768A9                 mov     rax, rbx
+.text:00000000021768AC                 shr     rax, 30h
+.text:00000000021768B0                 xor     rax, rbx
+.text:00000000021768B3                 sub     rax, rcx
+.text:00000000021768B6                 imul    rax, rdx
+.text:00000000021768BA                 sub     rax, r8
+.text:00000000021768BD                 mov     r8, [rbp+178h]
+.text:00000000021768C4                 add     rax, 0FFFFFFFFFFFF8DA5h
+.text:00000000021768CA                 add     rcx, rax
+.text:00000000021768CD                 lea     rax, cs:0BE6h
+.text:00000000021768D4                 sub     r8, rax
+.text:00000000021768D7                 mov     rax, rcx
+.text:00000000021768DA                 and     r8, 0FFFFFFFFC0000000h
+.text:00000000021768E1                 shr     rax, 28h
+.text:00000000021768E5                 rol     r8, 10h
+.text:00000000021768E9                 xor     rax, rcx
+.text:00000000021768EC                 xor     r8, cs:qword_71BB111
+.text:00000000021768F3                 not     r8
+.text:00000000021768F6                 mov     rbx, [r8+17h]
+.text:00000000021768FA                 imul    rbx, rax
+    */
+
+    /*uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
 
     RBX = *(uint64_t*)(imageBase + 0x1803E988);
     if (RBX == 0) {
@@ -64,7 +220,7 @@ uint64_t DecryptCharacterInfoPtr(uint64_t imageBase, uint64_t peb) // 48 8b 04 c
     RBX *= RAX;
     RAX = 0xF02663FD564FD7EB;
     RBX *= RAX;
-    return RBX;
+    return RBX;*/
 
     /*uint64_t RAX = imageBase, RBX = imageBase, RCX = imageBase, RDX = imageBase, R8 = imageBase, RDI = imageBase, RSI = imageBase, R9 = imageBase, R10 = imageBase, R11 = imageBase, R12 = imageBase, R13 = imageBase, R14 = imageBase, R15 = imageBase;
 
@@ -301,10 +457,15 @@ ULONG WINAPI Init()
 #endif
 
         if (KEY_UAV_MANAGER)
+        {
             bUav = !bUav;
+        }
 
-        if (KEY_RECOIL_MANAGER)
+        /*if (KEY_RECOIL_MANAGER)
+        {
             noRecoil = !noRecoil;
+        }*/
+            
 
         if (bUav)
         {
@@ -313,7 +474,7 @@ ULONG WINAPI Init()
                 if (cg != 0)
                 {
                     health = *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x25C }));
-                    if (health >= 0 && health <= 100)
+                    if (health >= 0 && health <= 300)
                     {
                         *(int*)((uintptr_t)offsets->FindDMAAddy(cg, { 0x304 })) = 33619969;
                     }
@@ -321,11 +482,11 @@ ULONG WINAPI Init()
             }
         }
 
-        if(noRecoil)
+        /*if (noRecoil)
         {
             if(GameMode > 1)
                NoRecoil();
-        }
+        }*/
 
         Sleep(1);
     }
