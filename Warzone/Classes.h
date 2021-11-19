@@ -22,15 +22,3 @@ public:
 	char pad_0308[1408]; //0x0308
 }; //Size: 0x0888
 static_assert(sizeof(cg_t) == 0x888);
-
-//[<ModernWarfare.exe>+1760F190]
-class N0000004E
-{
-public:
-	char pad_0000[1144]; //0x0000
-	char N00000A88[16]; //0x0478
-	char pad_0488[32]; //0x0488
-	char N00000A89[16]; //0x04A8
-	char pad_04B8[19416]; //0x04B8
-}; //Size: 0x5090
-static_assert(sizeof(N0000004E) == 0x5090);
