@@ -12,7 +12,7 @@
 #define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
 #define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
 
-#define OFFSET_CHARACTERINFO_RECOIL 0x38C84 //0F 85 ? ? ? ? 0F 2E 80 ? ? ? ? 0F 85 ? ? ? ? 4C 8D 96 ? ? ? ?
+#define OFFSET_CHARACTERINFO_RECOIL 0x11A8C //[0F 85 ? ? ? ? 0F 2E 80 ? ? ? ? 0F 85 ? ? ? ? 4C 8D 96 ? ? ? ?] + 0x13
 
 #define QWORD unsigned __int64
 
@@ -30,30 +30,43 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
 {
     uint64_t rax = 0ull, rbx = 0ull, rcx = 0ull, rdx = 0ull, r8 = 0ull, r9 = 0ull, r10 = 0ull;
 
-    rbx = *(uint64_t*)(imageBase + 0x180D5F58);
-    rcx = peb;
-    rax = imageBase;
-    rcx = ~rcx;
-    r8 = imageBase + 0x5A665254;
-    r8 -= rcx;
-    r8 ^= rbx;
-    r8 ^= rax;
-    rax = 0x4608305C4A63DEBB;
-    r8 *= rax;
-    r8 -= rcx;
-    rax = r8;
-    rax >>= 0x13;
-    r8 ^= rax;
-    rax = r8;
+    rbx = *(uint64_t*)(imageBase + 0x1806E058);    
+    r8 = peb;                                      
+    rcx = imageBase + 0x168;                       
+    rax = rbx;                                     
+    rax >>= 0x0D;                                 
+    rbx ^= rax;                                   
+    rax = rbx;                                    
+    rax >>= 0x1A;                                  
+    rbx ^= rax;                                   
+    rax = 0x75AC52C47565F299;
+    rdx = rbx;
+    rdx >>= 0x34;
+    rdx ^= rbx;
+    rdx *= rax;
+    rax = 0x3F38F2AE23228E30;
+    rdx -= rax;
+    rax = rdx;
+    rax >>= 0x7;
+    rdx ^= rax;
+    rax = rdx;
+    rax >>= 0x0E;
+    rdx ^= rax;
+    rax = rdx;
+    rax >>= 0x1C;
+    rdx ^= rax;
+    rax = imageBase + 0x5CE;
+    rcx -= rax;
+    rax = rdx;
     rcx = 0;
-    rax >>= 0x26;
+    rax >>= 0x38;
     rcx = _rotl64(rcx, 0x10);
-    rax ^= r8;
-    rcx ^= *(uint64_t*)(imageBase + 0x7241109);
-    rcx = _byteswap_uint64(rcx);
-    rbx = *(uint64_t*)(rcx + 0x7);
+    rax ^= rdx;
+    rcx ^= *(uint64_t*)(imageBase + 0x71D90F2);
+    rcx = ~rcx;
+    rbx = *(uint64_t*)(rcx + 0x13);
     rbx *= rax;
-
+    rbx -= r8;
     return rbx;
 }
     
