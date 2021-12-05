@@ -13,6 +13,9 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::CHECKUPDATE:
 		return m_offsets[Offset::CHECKUPDATE];
 		break;
+	case Offsets::RECOIL:
+		return m_offsets[Offset::RECOIL];
+		break;
 	default:
 		break;
 	}

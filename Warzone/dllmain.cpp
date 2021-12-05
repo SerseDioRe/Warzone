@@ -12,8 +12,6 @@
 #define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
 #define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
 
-#define OFFSET_CHARACTERINFO_RECOIL 0x11A8C //[0F 85 ? ? ? ? 0F 2E 80 ? ? ? ? 0F 85 ? ? ? ? 4C 8D 96 ? ? ? ?] + 0x13
-
 #define QWORD unsigned __int64
 
 Offsets* offsets = nullptr;
@@ -28,45 +26,35 @@ bool noRecoil = false;
 
 uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
 {
-    uint64_t rax = 0ull, rbx = 0ull, rcx = 0ull, rdx = 0ull, r8 = 0ull, r9 = 0ull, r10 = 0ull;
+    uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
 
-    rbx = *(uint64_t*)(imageBase + 0x1806E058);    
-    r8 = peb;                                      
-    rcx = imageBase + 0x168;                       
-    rax = rbx;                                     
-    rax >>= 0x0D;                                 
-    rbx ^= rax;                                   
-    rax = rbx;                                    
-    rax >>= 0x1A;                                  
-    rbx ^= rax;                                   
-    rax = 0x75AC52C47565F299;
-    rdx = rbx;
-    rdx >>= 0x34;
-    rdx ^= rbx;
-    rdx *= rax;
-    rax = 0x3F38F2AE23228E30;
-    rdx -= rax;
-    rax = rdx;
-    rax >>= 0x7;
-    rdx ^= rax;
-    rax = rdx;
-    rax >>= 0x0E;
-    rdx ^= rax;
-    rax = rdx;
-    rax >>= 0x1C;
-    rdx ^= rax;
-    rax = imageBase + 0x5CE;
-    rcx -= rax;
-    rax = rdx;
-    rcx = 0;
-    rax >>= 0x38;
-    rcx = _rotl64(rcx, 0x10);
-    rax ^= rdx;
-    rcx ^= *(uint64_t*)(imageBase + 0x71D90F2);
-    rcx = ~rcx;
-    rbx = *(uint64_t*)(rcx + 0x13);
-    rbx *= rax;
-    rbx -= r8;
+    rbx = *(uintptr_t*)(imageBase + 0x17D16158);
+    if (!rbx)
+        return rbx;
+    rdx = peb;              //mov rdx, gs:[rax]
+    r8 = imageBase;
+    rax = r8 + 0x98d6;      //lea rax, [r8+0x98D6]
+    rax += rdx;             //add rax, rdx
+    rcx = 0;                //and rcx, 0xFFFFFFFFC0000000
+    rax ^= rbx;             //xor rax, rbx
+    rcx = _rotl64(rcx, 0x10);               //rol rcx, 0x10
+    rcx ^= *(uintptr_t*)(imageBase + 0x6E7C0F8);             //xor rcx, [0x0000000004DFA36C]
+    rcx = _byteswap_uint64(rcx);            //bswap rcx
+    rbx = *(uintptr_t*)(rcx + 0xf);               //mov rbx, [rcx+0x0F]
+    rbx *= rax;             //imul rbx, rax
+    rax = 0x85EE7B04634E74EB;               //mov rax, 0x85EE7B04634E74EB
+    rbx *= rax;             //imul rbx, rax
+    rax = imageBase + 0x3DE0;          //lea rax, [0xFFFFFFFFFDF82034]
+    rdx ^= rax;             //xor rdx, rax
+    rax = 0xC646E4BB451666D0;               //mov rax, 0xC646E4BB451666D0
+    rbx -= rdx;             //sub rbx, rdx
+    rbx ^= rax;             //xor rbx, rax
+    rax = rbx;              //mov rax, rbx
+    rax >>= 0x1C;           //shr rax, 0x1C
+    rbx ^= rax;             //xor rbx, rax
+    rax = rbx;              //mov rax, rbx
+    rax >>= 0x38;           //shr rax, 0x38
+    rbx ^= rax;             //xor rbx, rax
     return rbx;
 }
     
@@ -78,7 +66,7 @@ void NoRecoil()
     {
         // up, down
         QWORD r12 = characterInfo_ptr;
-        r12 += OFFSET_CHARACTERINFO_RECOIL;
+        r12 += offsets->GetOffset(Offsets::RECOIL);
         QWORD rsi = r12 + 0x4;
         DWORD edx = *(QWORD*)(r12 + 0xC);
         DWORD ecx = (DWORD)r12;
@@ -120,8 +108,8 @@ ULONG WINAPI Init()
 
     offsets = new Offsets();
 
-    if (!Updated())
-        return NULL;
+    //if (!Updated())
+        //return NULL;
 
     while (!KEY_MODULE_EJECT)
     {
