@@ -28,7 +28,7 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
 {
     uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
 
-    rbx = *(uintptr_t*)(imageBase + 0x1E66B2B8);
+    rbx = *(uintptr_t*)(imageBase + 0x1E66C638);
     if (!rbx)
         return rbx;
     rdx = peb;              //mov rdx, gs:[rax]
@@ -39,7 +39,7 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
     rcx = 0;                //and rcx, 0xFFFFFFFFC0000000
     rbx ^= rax;             //xor rbx, rax
     rcx = _rotl64(rcx, 0x10);               //rol rcx, 0x10
-    rcx ^= *(uintptr_t*)(imageBase + 0x6F770E0);             //xor rcx, [0x0000000004E6F4CE]
+    rcx ^= *(uintptr_t*)(imageBase + 0x6F780E0);             //xor rcx, [0x0000000004E704CE]
     rax = 0xDA899ADE8577E085;               //mov rax, 0xDA899ADE8577E085
     rcx = _byteswap_uint64(rcx);            //bswap rcx
     rbx *= *(uintptr_t*)(rcx + 0x5);              //imul rbx, [rcx+0x05]
