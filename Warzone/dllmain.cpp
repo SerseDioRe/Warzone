@@ -28,33 +28,27 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
 {
     uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
 
-    rbx = *(uintptr_t*)(imageBase + 0x17D16158);
+    rbx = *(uintptr_t*)(imageBase + 0x1E66B2B8);
     if (!rbx)
         return rbx;
     rdx = peb;              //mov rdx, gs:[rax]
-    r8 = imageBase;
-    rax = r8 + 0x98d6;      //lea rax, [r8+0x98D6]
-    rax += rdx;             //add rax, rdx
+    rax = imageBase;   rbx -= rax;             //sub rbx, rax
+    rdx = ~rdx;             //not rdx
+    rax = rbx;              //mov rax, rbx
+    rax >>= 0x21;           //shr rax, 0x21
     rcx = 0;                //and rcx, 0xFFFFFFFFC0000000
-    rax ^= rbx;             //xor rax, rbx
+    rbx ^= rax;             //xor rbx, rax
     rcx = _rotl64(rcx, 0x10);               //rol rcx, 0x10
-    rcx ^= *(uintptr_t*)(imageBase + 0x6E7C0F8);             //xor rcx, [0x0000000004DFA36C]
+    rcx ^= *(uintptr_t*)(imageBase + 0x6F770E0);             //xor rcx, [0x0000000004E6F4CE]
+    rax = 0xDA899ADE8577E085;               //mov rax, 0xDA899ADE8577E085
     rcx = _byteswap_uint64(rcx);            //bswap rcx
-    rbx = *(uintptr_t*)(rcx + 0xf);               //mov rbx, [rcx+0x0F]
+    rbx *= *(uintptr_t*)(rcx + 0x5);              //imul rbx, [rcx+0x05]
     rbx *= rax;             //imul rbx, rax
-    rax = 0x85EE7B04634E74EB;               //mov rax, 0x85EE7B04634E74EB
-    rbx *= rax;             //imul rbx, rax
-    rax = imageBase + 0x3DE0;          //lea rax, [0xFFFFFFFFFDF82034]
-    rdx ^= rax;             //xor rdx, rax
-    rax = 0xC646E4BB451666D0;               //mov rax, 0xC646E4BB451666D0
-    rbx -= rdx;             //sub rbx, rdx
+    rax = imageBase + 0x8C25;          //lea rax, [0xFFFFFFFFFDF00FF6]
+    rbx ^= rdx;             //xor rbx, rdx
     rbx ^= rax;             //xor rbx, rax
-    rax = rbx;              //mov rax, rbx
-    rax >>= 0x1C;           //shr rax, 0x1C
-    rbx ^= rax;             //xor rbx, rax
-    rax = rbx;              //mov rax, rbx
-    rax >>= 0x38;           //shr rax, 0x38
-    rbx ^= rax;             //xor rbx, rax
+    rax = 0x2F137D2FC9809763;               //mov rax, 0x2F137D2FC9809763
+    rbx -= rax;             //sub rbx, rax
     return rbx;
 }
     
