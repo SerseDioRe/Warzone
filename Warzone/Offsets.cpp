@@ -16,6 +16,15 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::RECOIL:
 		return m_offsets[Offset::RECOIL];
 		break;
+	case Offsets::SHOTSFIREASSAULT:
+		return m_offsets[Offset::SHOTSFIREASSAULT];
+		break;
+	case Offsets::SHOTSFIRE:
+		return m_offsets[Offset::SHOTSFIRE];
+		break;
+	case Offsets::CROSSHAIR:
+		return m_offsets[Offset::CROSSHAIR];
+		break;
 	default:
 		break;
 	}

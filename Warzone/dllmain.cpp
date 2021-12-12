@@ -22,33 +22,38 @@ bool              bUav = false;
 int             health = 0;
 int             GameMode = 0;
 bool noRecoil = false;
+bool triggerBot = false;
+int crossHair = 0;
 
 
 uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
 {
     uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
 
-    rbx = *(uintptr_t*)(imageBase + 0x1E66C638);
+    rbx = *(uintptr_t*)(moduleBase + 0x1EA4F5B8);
     if (!rbx)
         return rbx;
-    rdx = peb;              //mov rdx, gs:[rax]
-    rax = imageBase;   rbx -= rax;             //sub rbx, rax
-    rdx = ~rdx;             //not rdx
+    rcx = peb;              //mov rcx, gs:[rax]
+    rax += 0xDFEF;          //add rax, 0xDFEF
+    rax += rcx;             //add rax, rcx
+    rbx += rax;             //add rbx, rax
+    rax = moduleBase + 0x1369507A;              //lea rax, [0x00000000111B0E56]
+    rax = ~rax;             //not rax
+    rdx = 0;                //and rdx, 0xFFFFFFFFC0000000
+    rax++;//inc rax
+    rdx = _rotl64(rdx, 0x10);               //rol rdx, 0x10
+    rdx ^= *(uintptr_t*)(moduleBase + 0x73640E1);             //xor rdx, [0x0000000004E7FEA5]
+    rcx += rax;             //add rcx, rax
     rax = rbx;              //mov rax, rbx
-    rax >>= 0x21;           //shr rax, 0x21
-    rcx = 0;                //and rcx, 0xFFFFFFFFC0000000
-    rbx ^= rax;             //xor rbx, rax
-    rcx = _rotl64(rcx, 0x10);               //rol rcx, 0x10
-    rcx ^= *(uintptr_t*)(imageBase + 0x6F780E0);             //xor rcx, [0x0000000004E704CE]
-    rax = 0xDA899ADE8577E085;               //mov rax, 0xDA899ADE8577E085
-    rcx = _byteswap_uint64(rcx);            //bswap rcx
-    rbx *= *(uintptr_t*)(rcx + 0x5);              //imul rbx, [rcx+0x05]
+    rax >>= 0x28;           //shr rax, 0x28
+    rcx ^= rax;             //xor rcx, rax
+    rax = 0x7A7976CE8F881C23;               //mov rax, 0x7A7976CE8F881C23
+    rbx ^= rcx;             //xor rbx, rcx
+    rdx = _byteswap_uint64(rdx);            //bswap rdx
+    rbx *= *(uintptr_t*)(rdx + 0x11);             //imul rbx, [rdx+0x11]
     rbx *= rax;             //imul rbx, rax
-    rax = imageBase + 0x8C25;          //lea rax, [0xFFFFFFFFFDF00FF6]
-    rbx ^= rdx;             //xor rbx, rdx
-    rbx ^= rax;             //xor rbx, rax
-    rax = 0x2F137D2FC9809763;               //mov rax, 0x2F137D2FC9809763
-    rbx -= rax;             //sub rbx, rax
+    rax = 0x12860E4265BBB083;               //mov rax, 0x12860E4265BBB083
+    rbx += rax;             //add rbx, rax
     return rbx;
 }
     
@@ -102,8 +107,8 @@ ULONG WINAPI Init()
 
     offsets = new Offsets();
 
-    //if (!Updated())
-        //return NULL;
+    if (!Updated())
+        return NULL;
 
     while (!KEY_MODULE_EJECT)
     {
@@ -119,6 +124,12 @@ ULONG WINAPI Init()
         {
             noRecoil = !noRecoil;
         }
+
+        // DON'T USE THAT SHIT
+        /*if (KEY_TRIGGERBOT_MANAGER)
+        {
+            triggerBot = !triggerBot;
+        }*/
             
 
         if (bUav)
@@ -140,6 +151,19 @@ ULONG WINAPI Init()
         {
             if(GameMode > 1)
                NoRecoil();
+        }
+
+        if(triggerBot)
+        {
+            if(GameMode > 1)
+            {
+                crossHair = *(int*)(moduleBase + offsets->GetOffset(Offsets::CROSSHAIR));
+                if(crossHair > 0)
+                {
+                    *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 1;
+                }else
+                    *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 0;
+            }
         }
 
         Sleep(1);
