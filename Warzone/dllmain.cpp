@@ -30,30 +30,32 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
 {
     uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
 
-    rbx = *(uintptr_t*)(moduleBase + 0x1EA4F5B8);
+    rbx = *(uintptr_t*)(imageBase + 0x1EB678B8);
     if (!rbx)
         return rbx;
-    rcx = peb;              //mov rcx, gs:[rax]
-    rax += 0xDFEF;          //add rax, 0xDFEF
-    rax += rcx;             //add rax, rcx
-    rbx += rax;             //add rbx, rax
-    rax = moduleBase + 0x1369507A;              //lea rax, [0x00000000111B0E56]
-    rax = ~rax;             //not rax
-    rdx = 0;                //and rdx, 0xFFFFFFFFC0000000
-    rax++;//inc rax
-    rdx = _rotl64(rdx, 0x10);               //rol rdx, 0x10
-    rdx ^= *(uintptr_t*)(moduleBase + 0x73640E1);             //xor rdx, [0x0000000004E7FEA5]
+    rdx = ~peb;              //mov rdx, gs:[rax]
+    r8 = imageBase;
+    rcx = rdx;              //mov rcx, rdx
+    rax = imageBase + 0x1740D79E;              //lea rax, [0x00000000151A30B0]
+    rcx = ~rcx;             //not rcx
     rcx += rax;             //add rcx, rax
-    rax = rbx;              //mov rax, rbx
-    rax >>= 0x28;           //shr rax, 0x28
+    rcx ^= rbx;             //xor rcx, rbx
+    rcx -= rdx;             //sub rcx, rdx
+    rcx -= r8;              //sub rcx, r8
+    rcx -= 0xF13A;          //sub rcx, 0xF13A
+    rax = rcx;              //mov rax, rcx
+    rax >>= 0x13;           //shr rax, 0x13
     rcx ^= rax;             //xor rcx, rax
-    rax = 0x7A7976CE8F881C23;               //mov rax, 0x7A7976CE8F881C23
+    rbx = rcx;              //mov rbx, rcx
+    rax = 0;                //and rax, 0xFFFFFFFFC0000000
+    rbx >>= 0x26;           //shr rbx, 0x26
+    rax = _rotl64(rax, 0x10);               //rol rax, 0x10
     rbx ^= rcx;             //xor rbx, rcx
-    rdx = _byteswap_uint64(rdx);            //bswap rdx
-    rbx *= *(uintptr_t*)(rdx + 0x11);             //imul rbx, [rdx+0x11]
+    rax ^= *(uintptr_t*)(imageBase + 0x72AF124);             //xor rax, [0x00000000050449EA]
+    rax = _byteswap_uint64(rax);            //bswap rax
+    rbx *= *(uintptr_t*)(rax + 0x7);              //imul rbx, [rax+0x07]
+    rax = 0x7D037367013E30B7;               //mov rax, 0x7D037367013E30B7
     rbx *= rax;             //imul rbx, rax
-    rax = 0x12860E4265BBB083;               //mov rax, 0x12860E4265BBB083
-    rbx += rax;             //add rbx, rax
     return rbx;
 }
     
@@ -107,8 +109,10 @@ ULONG WINAPI Init()
 
     offsets = new Offsets();
 
-    if (!Updated())
-        return NULL;
+    //if (!Updated())
+        //return NULL;
+
+    MessageBox(0, "", "", MB_ICONINFORMATION);
 
     while (!KEY_MODULE_EJECT)
     {
@@ -131,7 +135,6 @@ ULONG WINAPI Init()
             triggerBot = !triggerBot;
         }*/
             
-
         if (bUav)
         {
             if (GameMode > 1)
@@ -153,7 +156,7 @@ ULONG WINAPI Init()
                NoRecoil();
         }
 
-        if(triggerBot)
+        /*if (triggerBot)
         {
             if(GameMode > 1)
             {
@@ -164,7 +167,16 @@ ULONG WINAPI Init()
                 }else
                     *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 0;
             }
-        }
+        }*/
+
+        /*int isShooting = *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT));
+
+        if(isShooting > 0)
+        {
+            *(float*)(moduleBase + 0x212004F0) = 0.0F;
+            *(float*)(moduleBase + 0x21200518) = 0.0F;
+            *(float*)(moduleBase + 0x21200540) = 0.0F;
+        }*/
 
         Sleep(1);
     }
