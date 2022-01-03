@@ -4,11 +4,11 @@ uintptr_t Offsets::GetOffset(Offset offset)
 {
 	switch (offset)
 	{
-	case Offsets::CG_T:
-		return m_offsets[Offset::CG_T];
+	case Offsets::PLAYERSTATE_S:
+		return m_offsets[Offset::PLAYERSTATE_S];
 		break;
-	case Offsets::GAMEMODE:
-		return m_offsets[Offset::GAMEMODE];
+	case Offsets::NUM_OF_PLAYERS:
+		return m_offsets[Offset::NUM_OF_PLAYERS];
 		break;
 	case Offsets::CHECKUPDATE:
 		return m_offsets[Offset::CHECKUPDATE];
