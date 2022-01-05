@@ -23,24 +23,31 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
 {
     uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
 
-    rbx = *(uintptr_t*)(imageBase + 0x1F0D3938);
+    rbx = *(uintptr_t*)(imageBase + 0x1EF32838);
     if (!rbx)
         return rbx;
-    r8 = peb;               //mov r8, gs:[rax]
-    r9 = imageBase;    rdx = 0x22CBFA5C133D766B;               //mov rdx, 0x22CBFA5C133D766B
+    rdx = peb;              //mov rdx, gs:[rax]
+    r9 = imageBase + 0xEF81;           //lea r9, [0xFFFFFFFFFD94EE8D]
     rax = rbx;              //mov rax, rbx
-    rcx = 0;                //and rcx, 0xFFFFFFFFC0000000
-    rax >>= 0x25;           //shr rax, 0x25
+    rax >>= 0x15;           //shr rax, 0x15
     rbx ^= rax;             //xor rbx, rax
-    rcx = _rotl64(rcx, 0x10);               //rol rcx, 0x10
-    rcx ^= *(uintptr_t*)(imageBase + 0x78210EC);             //xor rcx, [0x0000000005045739]
-    rax = 0x2C925E0599A4412F;               //mov rax, 0x2C925E0599A4412F
-    rbx *= rdx;             //imul rbx, rdx
-    rcx = ~rcx;             //not rcx
-    rbx += rax;             //add rbx, rax
-    rbx *= *(uintptr_t*)(rcx + 0x9);              //imul rbx, [rcx+0x09]
-    rbx -= r8;              //sub rbx, r8
-    rbx += r9;              //add rbx, r9
+    rcx = rbx;              //mov rcx, rbx
+    r8 = 0;                 //and r8, 0xFFFFFFFFC0000000
+    rcx >>= 0x2A;           //shr rcx, 0x2A
+    rcx ^= rbx;             //xor rcx, rbx
+    r8 = _rotl64(r8, 0x10);                 //rol r8, 0x10
+    r8 ^= *(uintptr_t*)(imageBase + 0x76730C2);              //xor r8, [0x0000000004FB2F9E]
+    rax = 0x3C38AA1670A95F19;               //mov rax, 0x3C38AA1670A95F19
+    rbx = rdx;              //mov rbx, rdx
+    rbx = ~rbx;             //not rbx
+    rbx *= r9;              //imul rbx, r9
+    r8 = _byteswap_uint64(r8);              //bswap r8
+    rbx += rcx;             //add rbx, rcx
+    rbx -= rdx;             //sub rbx, rdx
+    rbx *= rax;             //imul rbx, rax
+    rax = 0x4AA02D69120472A5;               //mov rax, 0x4AA02D69120472A5
+    rbx -= rax;             //sub rbx, rax
+    rbx *= *(uintptr_t*)(r8 + 0x11);              //imul rbx, [r8+0x11]
     return rbx;
 }
     
