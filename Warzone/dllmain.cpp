@@ -16,6 +16,7 @@ bool            bUav = false;
 int           health = 0;
 int     numOfPlayers = 0;
 bool        noRecoil = false;
+bool noSpread = false;
 bool triggerBot      = false;
 int crossHair        = 0;
 
@@ -101,8 +102,7 @@ ULONG WINAPI Init()
 
     offsets = new Offsets();
 
-    //WeaponDef* weapons = (WeaponDef*)(moduleBase + 0x1B933DA0);
-    WeaponCompleteDefArr* weapons = (WeaponCompleteDefArr*)(moduleBase + 0x1B933DA0);
+    WeaponCompleteDefArr* weapons = (WeaponCompleteDefArr*)(moduleBase + offsets->GetOffset(Offsets::WEAPON_COMPLETE_DEF));
 
     //if (!Updated())
         //return NULL;
@@ -120,6 +120,74 @@ ULONG WINAPI Init()
         if (KEY_RECOIL_MANAGER)
         {
             noRecoil = !noRecoil;
+
+            if(noRecoil)
+            {
+                for (auto w : weapons->weaponCompleteDefArr)
+                {
+                    if (w->weapDef)
+                    {
+                        for(int i = 0; i < 6; i++)
+                        {
+                            // CORRECT
+                            w->weapDef->hipAngularGunKickDir[i] = 0.0F;          // 0x9BC
+                            w->weapDef->hipAngularGunKickDev[i] = 0.0F;          // 0x9D4
+                            w->weapDef->hipAngularGunKickStrengthMin[i] = 0.0F;
+                            w->weapDef->hipAngularGunKickStrengthMax[i] = 0.0F;
+                            w->weapDef->hipAngularGunKickPitchScale[i] = 0.0F;
+                            w->weapDef->adsAngularGunKickDir[i] = 0.0F;
+                            w->weapDef->adsAngularGunKickDev[i] = 0.0F;
+                            w->weapDef->adsAngularGunKickStrengthMin[i] = 0.0F;
+                            w->weapDef->adsAngularGunKickStrengthMax[i] = 0.0F;
+                            w->weapDef->adsAngularGunKickPitchScale[i] = 0.0F;
+                        }
+                    }
+                }
+            }
+        }
+
+        if(KEY_SPREAD_MANAGER)
+        {
+            noSpread = !noSpread;
+
+            if(noSpread)
+            {
+                for(auto w : weapons->weaponCompleteDefArr)
+                {
+                    if(w->weapDef)
+                    {
+                        w->weapDef->fHipSpreadDuckedDecay = 0.0F; // start no spread
+                        w->weapDef->fHipSpreadProneDecay = 0.0F;
+                        w->weapDef->hipSpreadSprintDecay = 0.0F;
+                        w->weapDef->hipSpreadInAirDecay = 0.0F;
+                        w->weapDef->fHipReticleSidePos = 0.0F;
+                        w->weapDef->fAdsIdleAmount = 0.0F;
+                        w->weapDef->fHipIdleAmount = 0.0F;
+                        w->weapDef->adsIdleSpeed = 0.0F;
+                        w->weapDef->hipIdleSpeed = 0.0F;
+                        w->weapDef->fIdleCrouchFactor = 0.0F;
+                        w->weapDef->fIdleProneFactor = 0.0F;
+                        w->weapDef->fGunMaxPitch = 0.0F;
+                        w->weapDef->fGunMaxYaw = 0.0F; // start no spread during moving and shooting
+                        w->weapDef->fViewMaxPitch = 0.0F;
+                        w->weapDef->fViewMaxYaw = 0.0F;
+                        w->weapDef->adsIdleLerpStartTime = 0.0F;
+                        w->weapDef->adsIdleLerpTime = 0.0F;
+                        w->weapDef->slideSpreadMin = 0.0F;
+                        w->weapDef->slideSpreadMax = 0.0F;
+                        w->weapDef->slideSpreadDecayRate = 0.0F;
+                        w->weapDef->slideSpreadFireAdd = 0.0F;
+                        w->weapDef->slideSpreadTurnAdd = 0.0F; // end no spread
+
+                        w->weapDef->swaySettings.hip.maxAngleSteadyAim = 0.0F;
+                        w->weapDef->swaySettings.ads.adsSwayScale[0] = 0.0F;
+                        w->weapDef->swaySettings.ads.adsSwayScale[1] = 0.0F;
+                        w->weapDef->swaySettings.ads.adsSwayScale[2] = 0.0F;
+                        w->weapDef->swaySettings.ads.swayTransitionLerpSpeed = 0.0F;
+                        w->weapDef->swaySettings.shellShockScale = 0.0F;
+                    }
+                }
+            }
         }
 
         // DON'T USE THAT SHIT
@@ -144,11 +212,11 @@ ULONG WINAPI Init()
             }
         }
 
-        if (noRecoil)
+        /*if (noRecoil)
         {
             if(numOfPlayers > 4)
                NoRecoil();
-        }
+        }*/
 
         /*if (triggerBot)
         {
@@ -175,12 +243,12 @@ ULONG WINAPI Init()
             }
         }*/
 
-        for (auto w : weapons->weaponCompleteDefArr)
-        {
-            if (w->weapDef)
-            {
+        //for (auto w : weapons->weaponCompleteDefArr)
+        //{
+            //if (w->weapDef)
+            //{
                 // SPREAD
-                w->weapDef->spread  = 0.0F;
+                /*w->weapDef->spread = 0.0F;
                 w->weapDef->spread2 = 0.0F;
                 w->weapDef->spread3 = 0.0F;
                 w->weapDef->spread4 = 0.0F;
@@ -232,7 +300,7 @@ ULONG WINAPI Init()
                 w->weapDef->spread50 = 0.0F;
                 w->weapDef->spread51 = 0.0F;
                 w->weapDef->spread52 = 0.0F;
-                w->weapDef->spread53 = 0.0F;
+                w->weapDef->spread53 = 0.0F;*/
 
                 // CRASH
                 /*w->weapDef->spread54 = 0.0F;
@@ -275,7 +343,7 @@ ULONG WINAPI Init()
                 w->weapDef->spread91 = 0.0F;*/
 
                 // NO RECOIL
-                w->weapDef->spread92 = 0.0F;
+                /*w->weapDef->spread92 = 0.0F;
                 w->weapDef->spread93 = 0.0F;
                 w->weapDef->spread94 = 0.0F;
                 w->weapDef->spread95 = 0.0F;
@@ -351,10 +419,10 @@ ULONG WINAPI Init()
                 w->weapDef->spread165 = 0.0F;
                 w->weapDef->spread166 = 0.0F;
                 w->weapDef->spread167 = 0.0F;
-                w->weapDef->spread168 = 0.0F;
+                w->weapDef->spread168 = 0.0F;*/
 
                 // TEST
-                w->weapDef->spread169 = 0.0F;
+                /*w->weapDef->spread169 = 0.0F;
                 w->weapDef->spread170 = 0.0F;
                 w->weapDef->spread171 = 0.0F;
                 w->weapDef->spread172 = 0.0F;
@@ -393,182 +461,13 @@ ULONG WINAPI Init()
                 w->weapDef->spread205 = 0.0F;
                 w->weapDef->spread206 = 0.0F;
                 w->weapDef->spread207 = 0.0F;
-                w->weapDef->spread208 = 0.0F;
-            }
-        }
+                w->weapDef->spread208 = 0.0F;*/
 
-        /*for (auto w : weapons->Weapons)
-        {
-            if(w->TestPtr)
-            {
-                w->TestPtr->N0000019E = 0;
-                w->TestPtr->N0000019F = 0;
-                w->TestPtr->N000001A0 = 0;
-                w->TestPtr->N000001A1 = 0;
-                w->TestPtr->N000001A2 = 0;
-                w->TestPtr->N000001A3 = 0;
-                w->TestPtr->N000001A4 = 0;
-                w->TestPtr->N000001A5 = 0;
-                w->TestPtr->N000001AF = 0;
-                w->TestPtr->N000001B0 = 0;
-                w->TestPtr->N000001B2 = 0;
-                w->TestPtr->N000001B5 = 0;
-                w->TestPtr->N000001B6 = 0;
-                w->TestPtr->N000001B8 = 0;
-                w->TestPtr->N000001B9 = 0;
-                w->TestPtr->N000001BA = 0;
-                w->TestPtr->N000001BB = 0;
-                w->TestPtr->N000001BC = 0;
-                w->TestPtr->N000001BD = 0;
-                w->TestPtr->N000001BE = 0;
-                w->TestPtr->N000001BF = 0;
-                w->TestPtr->N000001C0 = 0;
-                w->TestPtr->N000001C2 = 0;
-                w->TestPtr->N000001C3 = 0;
-                w->TestPtr->N000001C6 = 0;
-                w->TestPtr->N000001C7 = 0;
-                w->TestPtr->N000001C8 = 0;
-                w->TestPtr->N000001C9 = 0;
-                w->TestPtr->N000001CA = 0;
-                w->TestPtr->N000001CC = 0;
-                w->TestPtr->N000001CF = 0;
-                w->TestPtr->N000001D0 = 0;
-                w->TestPtr->N000001D2 = 0;
-                w->TestPtr->N000001D3 = 0;
-                w->TestPtr->N000001D4 = 0;
-                w->TestPtr->N000001D6 = 0;
-                w->TestPtr->N000001D7 = 0;
-                w->TestPtr->N000001DA = 0;
-                w->TestPtr->N000001DB = 0;
-                w->TestPtr->N000001DC = 0;
-                w->TestPtr->N000001DD = 0;
-                w->TestPtr->N000001DE = 0;
-                w->TestPtr->N000001E1 = 0;
-                w->TestPtr->N000001E2 = 0;
-                w->TestPtr->N000001E3 = 0;
-                w->TestPtr->N000001E4 = 0;
-                w->TestPtr->N000001E5 = 0;
-                w->TestPtr->N000001E9 = 0;
-                w->TestPtr->N000001EA = 0;
-                w->TestPtr->N00000645 = 0;
-                w->TestPtr->N00000648 = 0;
-                w->TestPtr->N0000064B = 0;
-                w->TestPtr->N00000650 = 0;
-                w->TestPtr->N00000653 = 0;
-                w->TestPtr->N00000656 = 0;
-                w->TestPtr->N0000065B = 0;
-                w->TestPtr->N0000065B = 0;
-                w->TestPtr->N0000065E = 0;
-                w->TestPtr->N00000663 = 0;
-                w->TestPtr->N0000066A = 0;
-                w->TestPtr->N0000066D = 0;
-                w->TestPtr->N00000670 = 0;
-                w->TestPtr->N00000673 = 0;
-                w->TestPtr->N00000676 = 0;
-                w->TestPtr->N00000679 = 0;
-                w->TestPtr->N0000067C = 0;
-                w->TestPtr->N0000067F = 0;
-                w->TestPtr->N00000682 = 0;
-                w->TestPtr->N00000685 = 0;
-                w->TestPtr->N00000688 = 0;
-                w->TestPtr->N0000068B = 0;
-                w->TestPtr->N0000068E = 0;
-                w->TestPtr->N00000693 = 0;
-                w->TestPtr->N00000696 = 0;
-                w->TestPtr->N0000069B = 0;
-                w->TestPtr->N000006A0 = 0;
-                w->TestPtr->N000006A3 = 0;
-                w->TestPtr->N000006A6 = 0;
-                w->TestPtr->N000006AB = 0;
-                w->TestPtr->N000006AE = 0;
-                w->TestPtr->N000006B1 = 0;
-                w->TestPtr->N000006B4 = 0;
-                w->TestPtr->N000006B7 = 0;
-                w->TestPtr->N000006BC = 0;
-                w->TestPtr->N000006BF = 0;
-                w->TestPtr->N000006C2 = 0;
-                w->TestPtr->N000006C5 = 0;
-                w->TestPtr->N000006C8 = 0;
-                w->TestPtr->N000006CB = 0;
-                w->TestPtr->spread = 0;
-                w->TestPtr->spread2 = 0;
-                w->TestPtr->spread3 = 0;
-                w->TestPtr->spread4 = 0;
-                w->TestPtr->spread5 = 0;
-                w->TestPtr->spread6 = 0;
-                w->TestPtr->spread7 = 0;
-                w->TestPtr->spread8 = 0;
-                w->TestPtr->spread9 = 0;
-                w->TestPtr->spread10 = 0;
-                w->TestPtr->spread11 = 0;
-                w->TestPtr->spread12 = 0;
-                w->TestPtr->spread13 = 0;
-                w->TestPtr->spread14 = 0;
-                w->TestPtr->spread15 = 0;
-                w->TestPtr->spread16 = 0;
-                w->TestPtr->spread17 = 0;
-                w->TestPtr->spread18 = 0;
-                w->TestPtr->spread19 = 0;
-                w->TestPtr->spread20 = 0;
-                w->TestPtr->spread21 = 0;
-                w->TestPtr->spread22 = 0;
-                w->TestPtr->spread44 = 0;
-                w->TestPtr->spread23 = 0;
-                w->TestPtr->spread24 = 0;
-                w->TestPtr->spread25 = 0;
-                w->TestPtr->spread26 = 0;
-                w->TestPtr->spread27 = 0;
-                w->TestPtr->spread28 = 0;
-                w->TestPtr->spread29 = 0;
-                w->TestPtr->spread30 = 0;
-                w->TestPtr->spread31 = 0;
-                w->TestPtr->spread32 = 0;
-                w->TestPtr->spread33 = 0;
-                w->TestPtr->spread34 = 0;
-                w->TestPtr->spread35 = 0;
-                w->TestPtr->spread36 = 0;
-                w->TestPtr->spread37 = 0;
-                w->TestPtr->spread38 = 0;
-                w->TestPtr->spread39 = 0;
-                w->TestPtr->spread40 = 0;
-                w->TestPtr->spread41 = 0;
-                w->TestPtr->spread42 = 0;
-                w->TestPtr->spread43 = 0;
-                w->TestPtr->spread44 = 0;
-                w->TestPtr->spread45 = 0;
-                w->TestPtr->spread46 = 0;
-                w->TestPtr->spread47 = 0;
-                w->TestPtr->spread48 = 0;
-                w->TestPtr->spread49 = 0;
-                w->TestPtr->spread50 = 0;
-                w->TestPtr->spread51 = 0;
-                w->TestPtr->spread52 = 0;
-                w->TestPtr->spread53 = 0;
-                w->TestPtr->spread54 = 0;
-                w->TestPtr->spread55 = 0;
-                w->TestPtr->spread56 = 0;
-                w->TestPtr->spread57 = 0;
-                w->TestPtr->spread58 = 0;
-                w->TestPtr->spread59 = 0;
-                w->TestPtr->spread60 = 0;
-                w->TestPtr->spread61 = 0;
-                w->TestPtr->spread62 = 0;
-                w->TestPtr->spread63 = 0;
-                w->TestPtr->spread64 = 0;
-                w->TestPtr->spread65 = 0;
-                w->TestPtr->spread66 = 0;
-                w->TestPtr->spread67 = 0;
-                w->TestPtr->spread68 = 0;
-                w->TestPtr->spread69 = 0;
-                w->TestPtr->spread70 = 0;
-                w->TestPtr->spread71 = 0;
-                w->TestPtr->spread72 = 0;
-                w->TestPtr->spread73 = 0;
-                w->TestPtr->spread74 = 0;
-                w->TestPtr->spread75 = 0;
-                w->TestPtr->spread76 = 0;
-            }
-        }*/
+
+
+
+            //}
+        //}
 
         Sleep(1);
     }
