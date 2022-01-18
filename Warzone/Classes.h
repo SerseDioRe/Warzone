@@ -90,7 +90,7 @@ static_assert(sizeof(Weapon) == 0x488);*/
 class WeaponCompleteDefArr
 {
 public:
-	class WeaponCompleteDef* weaponCompleteDefArr[964]; //0x0000
+	class WeaponCompleteDef* weaponCompleteDefArr[962]; //0x0000
 }; 
 
 class WeaponCompleteDef

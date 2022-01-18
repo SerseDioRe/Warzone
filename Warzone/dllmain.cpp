@@ -20,6 +20,9 @@ bool noSpread = false;
 bool triggerBot      = false;
 int crossHair        = 0;
 
+float valuesRecoilBackup[962][60];
+float valuesSpreadBackup[962][22];
+
 uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
 {
     uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
@@ -119,28 +122,179 @@ ULONG WINAPI Init()
 
         if (KEY_RECOIL_MANAGER)
         {
+            //2D5AE70
             noRecoil = !noRecoil;
 
             if(noRecoil)
             {
-                for (auto w : weapons->weaponCompleteDefArr)
+                //for (auto w : weapons->weaponCompleteDefArr)
+                for(int count = 0; count < 962; count++)
                 {
-                    if (w->weapDef)
+                    //if (w->weapDef)
+                    if(weapons->weaponCompleteDefArr[count]->weapDef)
                     {
-                        for(int i = 0; i < 6; i++)
+                        // BACKUP
+                        valuesRecoilBackup[count][0]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[0];
+                        valuesRecoilBackup[count][1]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[1];
+                        valuesRecoilBackup[count][2]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[2];
+                        valuesRecoilBackup[count][3]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[3];
+                        valuesRecoilBackup[count][4]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[4];
+                        valuesRecoilBackup[count][5]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[5];
+                        valuesRecoilBackup[count][6]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[0];
+                        valuesRecoilBackup[count][7]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[1];
+                        valuesRecoilBackup[count][8]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[2];
+                        valuesRecoilBackup[count][9]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[3];
+                        valuesRecoilBackup[count][10] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[4];
+                        valuesRecoilBackup[count][11] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[5];
+                        valuesRecoilBackup[count][12] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[0];
+                        valuesRecoilBackup[count][13] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[1];
+                        valuesRecoilBackup[count][14] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[2];
+                        valuesRecoilBackup[count][15] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[3];
+                        valuesRecoilBackup[count][16] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[4];
+                        valuesRecoilBackup[count][17] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[5];
+                        valuesRecoilBackup[count][18] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[0];
+                        valuesRecoilBackup[count][19] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[1];
+                        valuesRecoilBackup[count][20] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[2];
+                        valuesRecoilBackup[count][21] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[3];
+                        valuesRecoilBackup[count][22] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[4];
+                        valuesRecoilBackup[count][23] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[5];
+                        valuesRecoilBackup[count][24] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[0];
+                        valuesRecoilBackup[count][25] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[1];
+                        valuesRecoilBackup[count][26] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[2];
+                        valuesRecoilBackup[count][27] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[3];
+                        valuesRecoilBackup[count][28] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[4];
+                        valuesRecoilBackup[count][29] = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[5];
+                        valuesRecoilBackup[count][30] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[0];
+                        valuesRecoilBackup[count][31] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[1];
+                        valuesRecoilBackup[count][32] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[2];
+                        valuesRecoilBackup[count][33] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[3];
+                        valuesRecoilBackup[count][34] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[4];
+                        valuesRecoilBackup[count][35] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[5];
+                        valuesRecoilBackup[count][36] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[0];
+                        valuesRecoilBackup[count][37] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[1];
+                        valuesRecoilBackup[count][38] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[2];
+                        valuesRecoilBackup[count][39] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[3];
+                        valuesRecoilBackup[count][40] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[4];
+                        valuesRecoilBackup[count][41] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[5];
+                        valuesRecoilBackup[count][42] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[0];
+                        valuesRecoilBackup[count][43] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[1];
+                        valuesRecoilBackup[count][44] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[2];
+                        valuesRecoilBackup[count][45] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[3];
+                        valuesRecoilBackup[count][46] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[4];
+                        valuesRecoilBackup[count][47] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[5];
+                        valuesRecoilBackup[count][48] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[0];
+                        valuesRecoilBackup[count][49] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[1];
+                        valuesRecoilBackup[count][50] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[2];
+                        valuesRecoilBackup[count][51] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[3];
+                        valuesRecoilBackup[count][52] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[4];
+                        valuesRecoilBackup[count][53] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[5];
+                        valuesRecoilBackup[count][54] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[0];
+                        valuesRecoilBackup[count][55] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[1];
+                        valuesRecoilBackup[count][56] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[2];
+                        valuesRecoilBackup[count][57] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[3];
+                        valuesRecoilBackup[count][58] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[4];
+                        valuesRecoilBackup[count][59] = weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[5];
+
+                        for(int countGunKick = 0; countGunKick < 6; countGunKick++)
+                        {
+                            // WRITE
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[countGunKick]         = 0.0F; // 0x9BC
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[countGunKick]         = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[countGunKick] = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[countGunKick] = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[countGunKick]  = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[countGunKick]         = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[countGunKick]         = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[countGunKick] = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[countGunKick] = 0.0F;
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[countGunKick]  = 0.0F;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int count = 0; count < 962; count++)
+                {
+                    //if (w->weapDef)
+                    if (weapons->weaponCompleteDefArr[count]->weapDef)
+                    {
+                        // CORRECT
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[0]         = valuesRecoilBackup[count][0];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[1]         = valuesRecoilBackup[count][1];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[2]         = valuesRecoilBackup[count][2];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[3]         = valuesRecoilBackup[count][3];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[4]         = valuesRecoilBackup[count][4];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[5]         = valuesRecoilBackup[count][5];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[0]         = valuesRecoilBackup[count][6];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[1]         = valuesRecoilBackup[count][7];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[2]         = valuesRecoilBackup[count][8];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[3]         = valuesRecoilBackup[count][9];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[4]         = valuesRecoilBackup[count][10];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[5]         = valuesRecoilBackup[count][11];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[0] = valuesRecoilBackup[count][12];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[1] = valuesRecoilBackup[count][13];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[2] = valuesRecoilBackup[count][14];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[3] = valuesRecoilBackup[count][15];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[4] = valuesRecoilBackup[count][16];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[5] = valuesRecoilBackup[count][17];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[0] = valuesRecoilBackup[count][18];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[1] = valuesRecoilBackup[count][19];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[2] = valuesRecoilBackup[count][20];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[3] = valuesRecoilBackup[count][21];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[4] = valuesRecoilBackup[count][22];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[5] = valuesRecoilBackup[count][23];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[0]  = valuesRecoilBackup[count][24];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[1]  = valuesRecoilBackup[count][25];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[2]  = valuesRecoilBackup[count][26];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[3]  = valuesRecoilBackup[count][27];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[4]  = valuesRecoilBackup[count][28];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[5]  = valuesRecoilBackup[count][29];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[0]         = valuesRecoilBackup[count][30];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[1]         = valuesRecoilBackup[count][31];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[2]         = valuesRecoilBackup[count][32];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[3]         = valuesRecoilBackup[count][33];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[4]         = valuesRecoilBackup[count][34];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[5]         = valuesRecoilBackup[count][35];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[0]         = valuesRecoilBackup[count][36];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[1]         = valuesRecoilBackup[count][37];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[2]         = valuesRecoilBackup[count][38];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[3]         = valuesRecoilBackup[count][39];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[4]         = valuesRecoilBackup[count][40];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[5]         = valuesRecoilBackup[count][41];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[0] = valuesRecoilBackup[count][42];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[1] = valuesRecoilBackup[count][43];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[2] = valuesRecoilBackup[count][44];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[3] = valuesRecoilBackup[count][45];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[4] = valuesRecoilBackup[count][46];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[5] = valuesRecoilBackup[count][47];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[0] = valuesRecoilBackup[count][48];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[1] = valuesRecoilBackup[count][49];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[2] = valuesRecoilBackup[count][50];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[3] = valuesRecoilBackup[count][51];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[4] = valuesRecoilBackup[count][52];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[5] = valuesRecoilBackup[count][53];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[0]  = valuesRecoilBackup[count][54];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[1]  = valuesRecoilBackup[count][55];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[2]  = valuesRecoilBackup[count][56];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[3]  = valuesRecoilBackup[count][57];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[4]  = valuesRecoilBackup[count][58];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[5]  = valuesRecoilBackup[count][59];
+
+                        /*for (int i = 0; i < 6; i++)
                         {
                             // CORRECT
-                            w->weapDef->hipAngularGunKickDir[i] = 0.0F;          // 0x9BC
-                            w->weapDef->hipAngularGunKickDev[i] = 0.0F;          // 0x9D4
-                            w->weapDef->hipAngularGunKickStrengthMin[i] = 0.0F;
-                            w->weapDef->hipAngularGunKickStrengthMax[i] = 0.0F;
-                            w->weapDef->hipAngularGunKickPitchScale[i] = 0.0F;
-                            w->weapDef->adsAngularGunKickDir[i] = 0.0F;
-                            w->weapDef->adsAngularGunKickDev[i] = 0.0F;
-                            w->weapDef->adsAngularGunKickStrengthMin[i] = 0.0F;
-                            w->weapDef->adsAngularGunKickStrengthMax[i] = 0.0F;
-                            w->weapDef->adsAngularGunKickPitchScale[i] = 0.0F;
-                        }
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[i]         = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[i]         = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[i] = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[i] = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[i]  = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[i]         = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[i]         = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[i] = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[i] = valuesRecoilBackup[count][i];
+                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[i]  = valuesRecoilBackup[count][i];
+                        }*/
                     }
                 }
             }
@@ -152,39 +306,92 @@ ULONG WINAPI Init()
 
             if(noSpread)
             {
-                for(auto w : weapons->weaponCompleteDefArr)
+                //for (auto w : weapons->weaponCompleteDefArr)
+                for (int count = 0; count < 962; count++)
                 {
-                    if(w->weapDef)
+                    //if (w->weapDef)
+                    if (weapons->weaponCompleteDefArr[count]->weapDef)
                     {
-                        w->weapDef->fHipSpreadDuckedDecay = 0.0F; // start no spread
-                        w->weapDef->fHipSpreadProneDecay = 0.0F;
-                        w->weapDef->hipSpreadSprintDecay = 0.0F;
-                        w->weapDef->hipSpreadInAirDecay = 0.0F;
-                        w->weapDef->fHipReticleSidePos = 0.0F;
-                        w->weapDef->fAdsIdleAmount = 0.0F;
-                        w->weapDef->fHipIdleAmount = 0.0F;
-                        w->weapDef->adsIdleSpeed = 0.0F;
-                        w->weapDef->hipIdleSpeed = 0.0F;
-                        w->weapDef->fIdleCrouchFactor = 0.0F;
-                        w->weapDef->fIdleProneFactor = 0.0F;
-                        w->weapDef->fGunMaxPitch = 0.0F;
-                        w->weapDef->fGunMaxYaw = 0.0F; // start no spread during moving and shooting
-                        w->weapDef->fViewMaxPitch = 0.0F;
-                        w->weapDef->fViewMaxYaw = 0.0F;
-                        w->weapDef->adsIdleLerpStartTime = 0.0F;
-                        w->weapDef->adsIdleLerpTime = 0.0F;
-                        w->weapDef->slideSpreadMin = 0.0F;
-                        w->weapDef->slideSpreadMax = 0.0F;
-                        w->weapDef->slideSpreadDecayRate = 0.0F;
-                        w->weapDef->slideSpreadFireAdd = 0.0F;
-                        w->weapDef->slideSpreadTurnAdd = 0.0F; // end no spread
-
-                        w->weapDef->swaySettings.hip.maxAngleSteadyAim = 0.0F;
-                        w->weapDef->swaySettings.ads.adsSwayScale[0] = 0.0F;
-                        w->weapDef->swaySettings.ads.adsSwayScale[1] = 0.0F;
-                        w->weapDef->swaySettings.ads.adsSwayScale[2] = 0.0F;
-                        w->weapDef->swaySettings.ads.swayTransitionLerpSpeed = 0.0F;
-                        w->weapDef->swaySettings.shellShockScale = 0.0F;
+                        // BACKUP
+                        valuesSpreadBackup[count][0]  = weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay;
+                        valuesSpreadBackup[count][1]  = weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadProneDecay;
+                        valuesSpreadBackup[count][2]  = weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadSprintDecay;
+                        valuesSpreadBackup[count][3]  = weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadInAirDecay;
+                        valuesSpreadBackup[count][4]  = weapons->weaponCompleteDefArr[count]->weapDef->fHipReticleSidePos;
+                        valuesSpreadBackup[count][5]  = weapons->weaponCompleteDefArr[count]->weapDef->fAdsIdleAmount;
+                        valuesSpreadBackup[count][6]  = weapons->weaponCompleteDefArr[count]->weapDef->fHipIdleAmount;
+                        valuesSpreadBackup[count][7]  = weapons->weaponCompleteDefArr[count]->weapDef->adsIdleSpeed;
+                        valuesSpreadBackup[count][8]  = weapons->weaponCompleteDefArr[count]->weapDef->hipIdleSpeed;
+                        valuesSpreadBackup[count][9]  = weapons->weaponCompleteDefArr[count]->weapDef->fIdleCrouchFactor;
+                        valuesSpreadBackup[count][10] = weapons->weaponCompleteDefArr[count]->weapDef->fIdleProneFactor;
+                        valuesSpreadBackup[count][11] = weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxPitch;
+                        valuesSpreadBackup[count][12] = weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw; // start no spread during moving and shooting
+                        valuesSpreadBackup[count][13] = weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxPitch;
+                        valuesSpreadBackup[count][14] = weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxYaw;
+                        valuesSpreadBackup[count][15] = weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpStartTime;
+                        valuesSpreadBackup[count][16] = weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpTime;
+                        valuesSpreadBackup[count][17] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMin;
+                        valuesSpreadBackup[count][18] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMax;
+                        valuesSpreadBackup[count][19] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadDecayRate;
+                        valuesSpreadBackup[count][20] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadFireAdd;
+                        valuesSpreadBackup[count][21] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd; // end no spread
+                        // WRITE
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay = 0.0F; // start no spread
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadProneDecay  = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadSprintDecay  = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadInAirDecay   = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipReticleSidePos    = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fAdsIdleAmount        = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipIdleAmount        = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsIdleSpeed          = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipIdleSpeed          = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fIdleCrouchFactor     = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fIdleProneFactor      = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxPitch          = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw            = 0.0F; // start no spread during moving and shooting
+                        weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxPitch         = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxYaw           = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpStartTime  = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpTime       = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMin        = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMax        = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadDecayRate  = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadFireAdd    = 0.0F;
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd    = 0.0F; // end no spread
+                    }
+                }
+            }
+            else
+            {
+                //for (auto w : weapons->weaponCompleteDefArr)
+                for (int count = 0; count < 962; count++)
+                {
+                    //if (w->weapDef)
+                    if (weapons->weaponCompleteDefArr[count]->weapDef)
+                    {
+                        // WRITE
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay = valuesSpreadBackup[count][0];  // start no spread
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadProneDecay  = valuesSpreadBackup[count][1];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadSprintDecay  = valuesSpreadBackup[count][2];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadInAirDecay   = valuesSpreadBackup[count][3];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipReticleSidePos    = valuesSpreadBackup[count][4];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fAdsIdleAmount        = valuesSpreadBackup[count][5];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipIdleAmount        = valuesSpreadBackup[count][6];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsIdleSpeed          = valuesSpreadBackup[count][7];
+                        weapons->weaponCompleteDefArr[count]->weapDef->hipIdleSpeed          = valuesSpreadBackup[count][8];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fIdleCrouchFactor     = valuesSpreadBackup[count][9];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fIdleProneFactor      = valuesSpreadBackup[count][10];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxPitch          = valuesSpreadBackup[count][11];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw            = valuesSpreadBackup[count][12];           // start no spread during moving and shooting
+                        weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxPitch         = valuesSpreadBackup[count][13];
+                        weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxYaw           = valuesSpreadBackup[count][14];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpStartTime  = valuesSpreadBackup[count][15];
+                        weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpTime       = valuesSpreadBackup[count][16];
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMin        = valuesSpreadBackup[count][17];
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMax        = valuesSpreadBackup[count][18];
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadDecayRate  = valuesSpreadBackup[count][19];
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadFireAdd    = valuesSpreadBackup[count][20];
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd    = valuesSpreadBackup[count][21];   // end no spread
                     }
                 }
             }
