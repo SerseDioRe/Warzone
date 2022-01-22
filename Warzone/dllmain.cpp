@@ -54,33 +54,6 @@ uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8
     rbx *= *(uintptr_t*)(r8 + 0x11);              //imul rbx, [r8+0x11]
     return rbx;
 }
-    
-void NoRecoil()
-{
-    auto not_peb = __readgsqword(0x60);
-    uint64_t characterInfo_ptr = DecryptClientInfo(moduleBase, not_peb);
-    if (characterInfo_ptr)
-    {
-        // up, down
-        QWORD r12 = characterInfo_ptr;
-        r12 += offsets->GetOffset(Offsets::RECOIL);
-        QWORD rsi = r12 + 0x4;
-        DWORD edx = *(QWORD*)(r12 + 0xC);
-        DWORD ecx = (DWORD)r12;
-        ecx ^= edx;
-        DWORD eax = (DWORD)((QWORD)ecx + 0x2);
-        eax *= ecx;
-        ecx = (DWORD)rsi;
-        ecx ^= edx;
-        DWORD udZero = eax;
-        //left, right
-        eax = (DWORD)((QWORD)ecx + 0x2);
-        eax *= ecx;
-        DWORD lrZero = eax;
-        *(DWORD*)(r12) = udZero;
-        *(DWORD*)(rsi) = lrZero;
-    }
-}
 
 bool Updated()
 {
@@ -107,8 +80,8 @@ ULONG WINAPI Init()
 
     WeaponCompleteDefArr* weapons = (WeaponCompleteDefArr*)(moduleBase + offsets->GetOffset(Offsets::WEAPON_COMPLETE_DEF));
 
-    //if (!Updated())
-        //return NULL;
+    if (!Updated())
+        return NULL;
 
     while (!(KEY_MODULE_EJECT))
     {
