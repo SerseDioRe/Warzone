@@ -19,9 +19,6 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::SHOTSFIRE:
 		return m_offsets[Offset::SHOTSFIRE];
 		break;
-	case Offsets::CROSSHAIR:
-		return m_offsets[Offset::CROSSHAIR];
-		break;
 	case Offsets::WEAPON_COMPLETE_DEF:
 		return m_offsets[Offset::WEAPON_COMPLETE_DEF];
 		break;

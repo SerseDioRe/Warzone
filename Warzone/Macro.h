@@ -7,9 +7,8 @@
 #define ADDRESS_WEAPON_COMPLETE_DEF 0x1BBD0E20            // [48 89 74 24 ? 41 56 48 83 EC ? 4C 8B F2 48 8B F1 E8 ? ? ? ?]
 
 // Testing
-#define ADDRESS_SHOTSFIREASSAULT 0x1EAAC318               // [42 80 BC 3E ? ? ? ? ? 75 ? 42 80 BC 3E ? ? ? ? ? 74 ? 48 83 0A ?] [80 BC 0B ? ? ? ? ? 75 ? 80 BC 0B ? ? ? ? ? 74 ? 49 83 4D ? ? 41 8B 06 0F BA E8 ?]
-#define ADDRESS_SHOTSFIRE 0x1EAAC319                      // [42 80 BC 3E ? ? ? ? ? 75 ? 42 80 BC 3E ? ? ? ? ? 74 ? 48 83 0A ?] [80 BC 0B ? ? ? ? ? 75 ? 80 BC 0B ? ? ? ? ? 74 ? 49 83 4D ? ? 41 8B 06 0F BA E8 ?]
-#define ADDRESS_CROSSHAIR 0xB36316C                       // [48 8D 05 ? ? ? ? 48 89 6C 24 ? 4C 03 F0] lea + 0x20
+#define ADDRESS_SHOTSFIREASSAULT 0x1ED4C928               // [42 80 BC 3E ? ? ? ? ? 75 ? 42 80 BC 3E ? ? ? ? ? 74 ? 48 83 0A ?] [80 BC 0B ? ? ? ? ? 75 ? 80 BC 0B ? ? ? ? ? 74 ? 49 83 4D ? ? 41 8B 06 0F BA E8 ?]
+#define ADDRESS_SHOTSFIRE 0x1ED4C929                      // [42 80 BC 3E ? ? ? ? ? 75 ? 42 80 BC 3E ? ? ? ? ? 74 ? 48 83 0A ?] [80 BC 0B ? ? ? ? ? 75 ? 80 BC 0B ? ? ? ? ? 74 ? 49 83 4D ? ? 41 8B 06 0F BA E8 ?]
 
 // Options
 #define KEY_MODULE_EJECT GetAsyncKeyState(VK_END) & 1
@@ -18,4 +17,4 @@
 #define KEY_SPREAD_MANAGER GetAsyncKeyState(VK_F6) & 1
 
 // Testing
-#define KEY_TRIGGERBOT_MANAGER GetAsyncKeyState(VK_F6) & 1
+#define KEY_TRIGGERBOT_MANAGER GetAsyncKeyState(VK_F7) & 1

@@ -62,6 +62,8 @@ public:
 	bool radarBlocked; //0x0305
 	bool radarShowEnemyDirection; //0x0306
 	RadarMode radarMode; //0x0307
+	char pad_0478[1144]; //0x0260
+	int8_t crosshair; //0x0780
 };
 
 /*class WeaponDef

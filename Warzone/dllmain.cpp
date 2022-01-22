@@ -10,6 +10,7 @@
 
 Offsets* offsets           = nullptr;
 playerState_s* playerState = nullptr;
+uintptr_t isShootingAddress = 0;
 
 uintptr_t moduleBase = 0;
 bool            bUav = false;
@@ -371,10 +372,10 @@ ULONG WINAPI Init()
         }
 
         // DON'T USE THAT SHIT
-        /*if (KEY_TRIGGERBOT_MANAGER)
+        if (KEY_TRIGGERBOT_MANAGER)
         {
             triggerBot = !triggerBot;
-        }*/
+        }
             
         if (bUav)
         {
@@ -398,18 +399,24 @@ ULONG WINAPI Init()
                NoRecoil();
         }*/
 
-        /*if (triggerBot)
+        if (triggerBot)
         {
-            if(GameMode > 1)
+            if (numOfPlayers > 4)
             {
-                crossHair = *(int*)(moduleBase + offsets->GetOffset(Offsets::CROSSHAIR));
-                if(crossHair > 0)
+                if (playerState)
                 {
-                    *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 1;
-                }else
-                    *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 0;
+                    if (playerState->Health >= 0 && playerState->Health <= 300)
+                    {
+                        if(playerState->crosshair == 16)
+                        {
+                            *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 1;
+                        }
+                        else
+                            *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 0;
+                    }
+                }
             }
-        }*/
+        }
 
         /*for (auto w : weapons->Weapons)
         {
