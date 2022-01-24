@@ -410,9 +410,13 @@ ULONG WINAPI Init()
                         if(playerState->crosshair == 16)
                         {
                             *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 1;
+                            *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIRE)) = 1;
                         }
                         else
+                        {
                             *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIREASSAULT)) = 0;
+                            *(int*)(moduleBase + offsets->GetOffset(Offsets::SHOTSFIRE)) = 0;
+                        }
                     }
                 }
             }
