@@ -81,28 +81,35 @@ void* Hook::Init()
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // ptr
     };
 
+    MessageBox(0, "Before VirtualAlloc", "SUCCESS", MB_ICONINFORMATION);
     void* pTrampoline = VirtualAlloc(0, m_dwLen + sizeof(stub), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
+    MessageBox(0, "Before VirtualProtect", "SUCCESS", MB_ICONINFORMATION);
     DWORD dwOld = 0;
     VirtualProtect(m_pSource, m_dwLen, PAGE_EXECUTE_READWRITE, &dwOld);
 
     DWORD64 retto = (DWORD64)m_pSource + m_dwLen;
 
+    MessageBox(0, "Before Trampoline", "SUCCESS", MB_ICONINFORMATION);
     // trampoline
     memcpy(stub + 6, &retto, 8);
     memcpy((void*)((DWORD_PTR)pTrampoline), m_pSource, m_dwLen);
     memcpy((void*)((DWORD_PTR)pTrampoline + m_dwLen), stub, sizeof(stub));
+    MessageBox(0, "After Trampoline", "SUCCESS", MB_ICONINFORMATION);
 
     // orig
     memcpy(stub + 6, &m_pDestination, 8);
     memcpy(m_pSource, stub, sizeof(stub));
+    MessageBox(0, "After original", "SUCCESS", MB_ICONINFORMATION);
 
     for (int i = MinLen; i < m_dwLen; i++)
     {
         *(BYTE*)((DWORD_PTR)m_pSource + i) = 0x90;
     }
 
+    MessageBox(0, "Before VirtualProtect", "SUCCESS", MB_ICONINFORMATION);
     VirtualProtect(m_pSource, m_dwLen, dwOld, &dwOld);
+    MessageBox(0, "FINISH After VirtualProtect", "SUCCESS", MB_ICONINFORMATION);
     return (void*)((DWORD_PTR)pTrampoline);
 }
 

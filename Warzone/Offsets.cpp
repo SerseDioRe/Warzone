@@ -22,6 +22,9 @@ uintptr_t Offsets::GetOffset(Offset offset)
 	case Offsets::WEAPON_COMPLETE_DEF:
 		return m_offsets[Offset::WEAPON_COMPLETE_DEF];
 		break;
+	case Offsets::WRITE_VIEW_ANGLES:
+		return m_offsets[Offset::WRITE_VIEW_ANGLES];
+		break;
 	default:
 		break;
 	}

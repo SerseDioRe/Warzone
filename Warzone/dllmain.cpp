@@ -12,6 +12,9 @@ Offsets* offsets           = nullptr;
 playerState_s* playerState = nullptr;
 uintptr_t isShootingAddress = 0;
 
+float newAngleX = 85.0F;
+float newAngleY = 85.0F;
+
 uintptr_t moduleBase = 0;
 bool            bUav = false;
 int           health = 0;
@@ -23,6 +26,20 @@ int crossHair        = 0;
 
 float valuesRecoilBackup[962][60];
 float valuesSpreadBackup[962][22];
+
+uintptr_t jmpBackAddyViewAngles;
+
+void __declspec(naked) writeableViewAngles() // 14 bytes
+{
+    __asm
+    {
+        movss xmm0, newAngleX;
+        movss   dword ptr[rbx + rdi * 4 + 0x000001DC], xmm0;
+        movss xmm0, newAngleY;
+        movss   dword ptr[rbx + rdi * 4 + 0x000001E0], xmm0;
+        jmp[jmpBackAddyViewAngles];
+    }
+}
 
 uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
 {
@@ -69,6 +86,50 @@ bool Updated()
     return false;
 }
 
+void* DetourFunction64(void* pSource, void* pDestination, int dwLen)
+{
+    DWORD MinLen = 14;
+
+    if (dwLen < MinLen) return NULL;
+
+    BYTE stub[] = {
+    0xFF, 0x25, 0x00, 0x00, 0x00, 0x00, // jmp qword ptr [$+6]
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // ptr
+    };
+
+    void* pTrampoline = VirtualAlloc(0, dwLen + sizeof(stub), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+    DWORD dwOld = 0;
+    VirtualProtect(pSource, dwLen, PAGE_EXECUTE_READWRITE, &dwOld);
+
+    DWORD64 retto = (DWORD64)pSource + dwLen;
+
+    // trampoline
+    memcpy(stub + 6, &retto, 8);
+    memcpy((void*)((DWORD_PTR)pTrampoline), pSource, dwLen);
+    memcpy((void*)((DWORD_PTR)pTrampoline + dwLen), stub, sizeof(stub));
+
+    // orig
+    memcpy(stub + 6, &pDestination, 8);
+    memcpy(pSource, stub, sizeof(stub));
+
+    for (int i = MinLen; i < dwLen; i++)
+    {
+        *(BYTE*)((DWORD_PTR)pSource + i) = 0x90;
+    }
+
+    VirtualProtect(pSource, dwLen, dwOld, &dwOld);
+    return (void*)((DWORD_PTR)pTrampoline);
+}
+
+void PatchBytes(BYTE* destination, BYTE* source, size_t size)
+{
+    DWORD oldProtect;
+    VirtualProtect((LPVOID)destination, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+    memcpy(destination, source, size);
+    VirtualProtect(destination, size, oldProtect, &oldProtect);
+}
+
 ULONG WINAPI Init()
 {
     while (moduleBase == 0)
@@ -84,6 +145,9 @@ ULONG WINAPI Init()
     if (!Updated())
         return NULL;
 
+    // FINALLY AIMBOT VIEW ANGLES
+    //PatchBytes((BYTE*)moduleBase + offsets->GetOffset(Offsets::WRITE_VIEW_ANGLES), (BYTE*)"\xF3\x0F\x10\x05\x49\x3F\x21\x1E\xF3\x0F\x11\x83\xDC\x01\x00\x00\xF3\x0F\x10\x05\x3D\x3F\x21\x1E\xF3\x0F\x11\x83\xE0\x01\x00\x00\x90\x90\x90\x90", 36);
+
     while (!(KEY_MODULE_EJECT))
     {
         numOfPlayers = *(int*)           (moduleBase + offsets->GetOffset(Offsets::NUM_OF_PLAYERS));
@@ -93,6 +157,10 @@ ULONG WINAPI Init()
         {
             bUav = !bUav;
         }
+
+        // FINALLY AIMBOT VIEW ANGLES
+        //*(float*)(moduleBase + 0x218E0A7C) = 85.0F;
+        //*(float*)(moduleBase + 0x218E0A80) = 85.0F;
 
         if (KEY_RECOIL_MANAGER)
         {
@@ -662,6 +730,8 @@ ULONG WINAPI Init()
 
         Sleep(1);
     }
+
+    PatchBytes((BYTE*)moduleBase + offsets->GetOffset(Offsets::WRITE_VIEW_ANGLES), (BYTE*)"\x0F\x28\xC6\xF3\x41\x0F\x58\xC0\xF3\x0F\x10\xC8\x66\x0F\x3A\x0A\xD1\x01\xF3\x0F\x5C\xF2\xF3\x41\x0F\x59\xF2\xF3\x0F\x11\xB4\xBB\xDC\x01\x00\x00", 36);
    
     return true;
 }
