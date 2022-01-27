@@ -43,33 +43,35 @@ void __declspec(naked) writeableViewAngles() // 14 bytes
 
 uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
 {
-    uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, r8 = imageBase, rdi = imageBase, rsi = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
-
-    rbx = *(uintptr_t*)(imageBase + 0x1EF32838);
+    uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, rdi = imageBase, rsi = imageBase, r8 = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
+    rbx = *(uintptr_t*)(imageBase + 0x1E910518);
     if (!rbx)
         return rbx;
     rdx = peb;              //mov rdx, gs:[rax]
-    r9 = imageBase + 0xEF81;           //lea r9, [0xFFFFFFFFFD94EE8D]
+    rax = 0;                //and rax, 0xFFFFFFFFC0000000
+    rax = _rotl64(rax, 0x10);               //rol rax, 0x10
+    rax ^= *(uintptr_t*)(imageBase + 0x71510ED);             //xor rax, [0x0000000004F53E55]
+    rax = _byteswap_uint64(rax);            //bswap rax
+    rbx *= *(uintptr_t*)(rax + 0xb);              //imul rbx, [rax+0x0B]
+    rbx += rdx;             //add rbx, rdx
     rax = rbx;              //mov rax, rbx
-    rax >>= 0x15;           //shr rax, 0x15
-    rbx ^= rax;             //xor rbx, rax
     rcx = rbx;              //mov rcx, rbx
-    r8 = 0;                 //and r8, 0xFFFFFFFFC0000000
-    rcx >>= 0x2A;           //shr rcx, 0x2A
-    rcx ^= rbx;             //xor rcx, rbx
-    r8 = _rotl64(r8, 0x10);                 //rol r8, 0x10
-    r8 ^= *(uintptr_t*)(imageBase + 0x76730C2);              //xor r8, [0x0000000004FB2F9E]
-    rax = 0x3C38AA1670A95F19;               //mov rax, 0x3C38AA1670A95F19
+    rax >>= 0xB;            //shr rax, 0x0B
     rbx = rdx;              //mov rbx, rdx
-    rbx = ~rbx;             //not rbx
-    rbx *= r9;              //imul rbx, r9
-    r8 = _byteswap_uint64(r8);              //bswap r8
-    rbx += rcx;             //add rbx, rcx
-    rbx -= rdx;             //sub rbx, rdx
+    rcx ^= rax;             //xor rcx, rax
+    rax = rcx;              //mov rax, rcx
+    rax >>= 0x16;           //shr rax, 0x16
+    rcx ^= rax;             //xor rcx, rax
+    rax = imageBase + 0x5FE0;          //lea rax, [0xFFFFFFFFFDE08D1C]
     rbx *= rax;             //imul rbx, rax
-    rax = 0x4AA02D69120472A5;               //mov rax, 0x4AA02D69120472A5
-    rbx -= rax;             //sub rbx, rax
-    rbx *= *(uintptr_t*)(r8 + 0x11);              //imul rbx, [r8+0x11]
+    rax = rcx;              //mov rax, rcx
+    rax >>= 0x2C;           //shr rax, 0x2C
+    rbx ^= rax;             //xor rbx, rax
+    rax = 0xC4138E51387F1EA1;               //mov rax, 0xC4138E51387F1EA1
+    rbx ^= rcx;             //xor rbx, rcx
+    rbx *= rax;             //imul rbx, rax
+    rax = 0x42D230AEBD9F3922;               //mov rax, 0x42D230AEBD9F3922
+    rbx ^= rax;             //xor rbx, rax
     return rbx;
 }
 
