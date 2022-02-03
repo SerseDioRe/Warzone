@@ -6,14 +6,9 @@
 #include <psapi.h>
 #include <process.h>
 
-#define QWORD unsigned __int64
-
 Offsets* offsets           = nullptr;
 playerState_s* playerState = nullptr;
 uintptr_t isShootingAddress = 0;
-
-float newAngleX = 85.0F;
-float newAngleY = 85.0F;
 
 uintptr_t moduleBase = 0;
 bool            bUav = false;
@@ -27,54 +22,6 @@ int crossHair        = 0;
 float valuesRecoilBackup[962][60];
 float valuesSpreadBackup[962][22];
 
-uintptr_t jmpBackAddyViewAngles;
-
-void __declspec(naked) writeableViewAngles() // 14 bytes
-{
-    __asm
-    {
-        movss xmm0, newAngleX;
-        movss   dword ptr[rbx + rdi * 4 + 0x000001DC], xmm0;
-        movss xmm0, newAngleY;
-        movss   dword ptr[rbx + rdi * 4 + 0x000001E0], xmm0;
-        jmp[jmpBackAddyViewAngles];
-    }
-}
-
-uint64_t DecryptClientInfo(uint64_t imageBase, uint64_t peb) // 48 8b 04 c1 48 8b 1c 03 48 8b cb 48 8b 03 ff 90 98 00 00 00
-{
-    uint64_t rax = imageBase, rbx = imageBase, rcx = imageBase, rdx = imageBase, rdi = imageBase, rsi = imageBase, r8 = imageBase, r9 = imageBase, r10 = imageBase, r11 = imageBase, r12 = imageBase, r13 = imageBase, r14 = imageBase, r15 = imageBase;
-    rbx = *(uintptr_t*)(imageBase + 0x1E910518);
-    if (!rbx)
-        return rbx;
-    rdx = peb;              //mov rdx, gs:[rax]
-    rax = 0;                //and rax, 0xFFFFFFFFC0000000
-    rax = _rotl64(rax, 0x10);               //rol rax, 0x10
-    rax ^= *(uintptr_t*)(imageBase + 0x71510ED);             //xor rax, [0x0000000004F53E55]
-    rax = _byteswap_uint64(rax);            //bswap rax
-    rbx *= *(uintptr_t*)(rax + 0xb);              //imul rbx, [rax+0x0B]
-    rbx += rdx;             //add rbx, rdx
-    rax = rbx;              //mov rax, rbx
-    rcx = rbx;              //mov rcx, rbx
-    rax >>= 0xB;            //shr rax, 0x0B
-    rbx = rdx;              //mov rbx, rdx
-    rcx ^= rax;             //xor rcx, rax
-    rax = rcx;              //mov rax, rcx
-    rax >>= 0x16;           //shr rax, 0x16
-    rcx ^= rax;             //xor rcx, rax
-    rax = imageBase + 0x5FE0;          //lea rax, [0xFFFFFFFFFDE08D1C]
-    rbx *= rax;             //imul rbx, rax
-    rax = rcx;              //mov rax, rcx
-    rax >>= 0x2C;           //shr rax, 0x2C
-    rbx ^= rax;             //xor rbx, rax
-    rax = 0xC4138E51387F1EA1;               //mov rax, 0xC4138E51387F1EA1
-    rbx ^= rcx;             //xor rbx, rcx
-    rbx *= rax;             //imul rbx, rax
-    rax = 0x42D230AEBD9F3922;               //mov rax, 0x42D230AEBD9F3922
-    rbx ^= rax;             //xor rbx, rax
-    return rbx;
-}
-
 bool Updated()
 {
     BYTE m_checkUpdate[2] = { 0x74, 0x1D };
@@ -86,50 +33,6 @@ bool Updated()
     }
 
     return false;
-}
-
-void* DetourFunction64(void* pSource, void* pDestination, int dwLen)
-{
-    DWORD MinLen = 14;
-
-    if (dwLen < MinLen) return NULL;
-
-    BYTE stub[] = {
-    0xFF, 0x25, 0x00, 0x00, 0x00, 0x00, // jmp qword ptr [$+6]
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // ptr
-    };
-
-    void* pTrampoline = VirtualAlloc(0, dwLen + sizeof(stub), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-
-    DWORD dwOld = 0;
-    VirtualProtect(pSource, dwLen, PAGE_EXECUTE_READWRITE, &dwOld);
-
-    DWORD64 retto = (DWORD64)pSource + dwLen;
-
-    // trampoline
-    memcpy(stub + 6, &retto, 8);
-    memcpy((void*)((DWORD_PTR)pTrampoline), pSource, dwLen);
-    memcpy((void*)((DWORD_PTR)pTrampoline + dwLen), stub, sizeof(stub));
-
-    // orig
-    memcpy(stub + 6, &pDestination, 8);
-    memcpy(pSource, stub, sizeof(stub));
-
-    for (int i = MinLen; i < dwLen; i++)
-    {
-        *(BYTE*)((DWORD_PTR)pSource + i) = 0x90;
-    }
-
-    VirtualProtect(pSource, dwLen, dwOld, &dwOld);
-    return (void*)((DWORD_PTR)pTrampoline);
-}
-
-void PatchBytes(BYTE* destination, BYTE* source, size_t size)
-{
-    DWORD oldProtect;
-    VirtualProtect((LPVOID)destination, size, PAGE_EXECUTE_READWRITE, &oldProtect);
-    memcpy(destination, source, size);
-    VirtualProtect(destination, size, oldProtect, &oldProtect);
 }
 
 ULONG WINAPI Init()
@@ -147,12 +50,6 @@ ULONG WINAPI Init()
     if (!Updated())
         return NULL;
 
-    // FINALLY AIMBOT VIEW ANGLES
-    //2A57977
-    //PatchBytes((BYTE*)moduleBase + 0x2983391, (BYTE*)"\xF3\x0F\x10\x05\x49\x3F\x21\x1E\xF3\x0F\x11\x83\xDC\x01\x00\x00\xF3\x0F\x10\x05\x3D\x3F\x21\x1E\xF3\x0F\x11\x83\xE0\x01\x00\x00\x90\x90\x90", 35);
-    //PatchBytes((BYTE*)moduleBase + 0x2A57977, (BYTE*)"\xF3\x0F\x10\x05\x49\x3F\x21\x1E\xF3\x0F\x11\x83\xDC\x01\x00\x00\xF3\x0F\x10\x05\x3D\x3F\x21\x1E\xF3\x0F\x11\x83\xE0\x01\x00\x00\x90\x90\x90\x90", 36);
-    //PatchBytes((BYTE*)moduleBase + offsets->GetOffset(Offsets::WRITE_VIEW_ANGLES), (BYTE*)"\xF3\x0F\x10\x05\x49\x3F\x21\x1E\xF3\x0F\x11\x83\xDC\x01\x00\x00\xF3\x0F\x10\x05\x3D\x3F\x21\x1E\xF3\x0F\x11\x83\xE0\x01\x00\x00\x90\x90\x90\x90", 36);
-
     while (!(KEY_MODULE_EJECT))
     {
         numOfPlayers = *(int*)           (moduleBase + offsets->GetOffset(Offsets::NUM_OF_PLAYERS));
@@ -163,24 +60,16 @@ ULONG WINAPI Init()
             bUav = !bUav;
         }
 
-        // FINALLY AIMBOT VIEW ANGLES
-        //*(float*)(moduleBase + 0x218E0A7C) = 85.0F;
-        //*(float*)(moduleBase + 0x218E0A80) = 85.0F;
-
         if (KEY_RECOIL_MANAGER)
         {
-            //2D5AE70
             noRecoil = !noRecoil;
 
             if(noRecoil)
             {
-                //for (auto w : weapons->weaponCompleteDefArr)
                 for(int count = 0; count < 962; count++)
                 {
-                    //if (w->weapDef)
                     if(weapons->weaponCompleteDefArr[count]->weapDef)
                     {
-                        // BACKUP
                         valuesRecoilBackup[count][0]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[0];
                         valuesRecoilBackup[count][1]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[1];
                         valuesRecoilBackup[count][2]  = weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[2];
@@ -244,7 +133,6 @@ ULONG WINAPI Init()
 
                         for(int countGunKick = 0; countGunKick < 6; countGunKick++)
                         {
-                            // WRITE
                             weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[countGunKick]         = 0.0F; // 0x9BC
                             weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[countGunKick]         = 0.0F;
                             weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[countGunKick] = 0.0F;
@@ -263,10 +151,8 @@ ULONG WINAPI Init()
             {
                 for (int count = 0; count < 962; count++)
                 {
-                    //if (w->weapDef)
                     if (weapons->weaponCompleteDefArr[count]->weapDef)
                     {
-                        // CORRECT
                         weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[0]         = valuesRecoilBackup[count][0];
                         weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[1]         = valuesRecoilBackup[count][1];
                         weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[2]         = valuesRecoilBackup[count][2];
@@ -327,21 +213,6 @@ ULONG WINAPI Init()
                         weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[3]  = valuesRecoilBackup[count][57];
                         weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[4]  = valuesRecoilBackup[count][58];
                         weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[5]  = valuesRecoilBackup[count][59];
-
-                        /*for (int i = 0; i < 6; i++)
-                        {
-                            // CORRECT
-                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDir[i]         = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickDev[i]         = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMin[i] = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickStrengthMax[i] = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->hipAngularGunKickPitchScale[i]  = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDir[i]         = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickDev[i]         = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMin[i] = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickStrengthMax[i] = valuesRecoilBackup[count][i];
-                            weapons->weaponCompleteDefArr[count]->weapDef->adsAngularGunKickPitchScale[i]  = valuesRecoilBackup[count][i];
-                        }*/
                     }
                 }
             }
@@ -353,13 +224,10 @@ ULONG WINAPI Init()
 
             if(noSpread)
             {
-                //for (auto w : weapons->weaponCompleteDefArr)
                 for (int count = 0; count < 962; count++)
                 {
-                    //if (w->weapDef)
                     if (weapons->weaponCompleteDefArr[count]->weapDef)
                     {
-                        // BACKUP
                         valuesSpreadBackup[count][0]  = weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay;
                         valuesSpreadBackup[count][1]  = weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadProneDecay;
                         valuesSpreadBackup[count][2]  = weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadSprintDecay;
@@ -372,7 +240,7 @@ ULONG WINAPI Init()
                         valuesSpreadBackup[count][9]  = weapons->weaponCompleteDefArr[count]->weapDef->fIdleCrouchFactor;
                         valuesSpreadBackup[count][10] = weapons->weaponCompleteDefArr[count]->weapDef->fIdleProneFactor;
                         valuesSpreadBackup[count][11] = weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxPitch;
-                        valuesSpreadBackup[count][12] = weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw; // start no spread during moving and shooting
+                        valuesSpreadBackup[count][12] = weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw; 
                         valuesSpreadBackup[count][13] = weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxPitch;
                         valuesSpreadBackup[count][14] = weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxYaw;
                         valuesSpreadBackup[count][15] = weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpStartTime;
@@ -381,9 +249,9 @@ ULONG WINAPI Init()
                         valuesSpreadBackup[count][18] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMax;
                         valuesSpreadBackup[count][19] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadDecayRate;
                         valuesSpreadBackup[count][20] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadFireAdd;
-                        valuesSpreadBackup[count][21] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd; // end no spread
+                        valuesSpreadBackup[count][21] = weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd; 
                         // WRITE
-                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay = 0.0F; // start no spread
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay = 0.0F; 
                         weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadProneDecay  = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadSprintDecay  = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadInAirDecay   = 0.0F;
@@ -395,7 +263,7 @@ ULONG WINAPI Init()
                         weapons->weaponCompleteDefArr[count]->weapDef->fIdleCrouchFactor     = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->fIdleProneFactor      = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxPitch          = 0.0F;
-                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw            = 0.0F; // start no spread during moving and shooting
+                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw            = 0.0F; 
                         weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxPitch         = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxYaw           = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpStartTime  = 0.0F;
@@ -404,20 +272,17 @@ ULONG WINAPI Init()
                         weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMax        = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadDecayRate  = 0.0F;
                         weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadFireAdd    = 0.0F;
-                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd    = 0.0F; // end no spread
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd    = 0.0F; 
                     }
                 }
             }
             else
             {
-                //for (auto w : weapons->weaponCompleteDefArr)
                 for (int count = 0; count < 962; count++)
                 {
-                    //if (w->weapDef)
                     if (weapons->weaponCompleteDefArr[count]->weapDef)
                     {
-                        // WRITE
-                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay = valuesSpreadBackup[count][0];  // start no spread
+                        weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadDuckedDecay = valuesSpreadBackup[count][0];  
                         weapons->weaponCompleteDefArr[count]->weapDef->fHipSpreadProneDecay  = valuesSpreadBackup[count][1];
                         weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadSprintDecay  = valuesSpreadBackup[count][2];
                         weapons->weaponCompleteDefArr[count]->weapDef->hipSpreadInAirDecay   = valuesSpreadBackup[count][3];
@@ -429,7 +294,7 @@ ULONG WINAPI Init()
                         weapons->weaponCompleteDefArr[count]->weapDef->fIdleCrouchFactor     = valuesSpreadBackup[count][9];
                         weapons->weaponCompleteDefArr[count]->weapDef->fIdleProneFactor      = valuesSpreadBackup[count][10];
                         weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxPitch          = valuesSpreadBackup[count][11];
-                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw            = valuesSpreadBackup[count][12];           // start no spread during moving and shooting
+                        weapons->weaponCompleteDefArr[count]->weapDef->fGunMaxYaw            = valuesSpreadBackup[count][12];      
                         weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxPitch         = valuesSpreadBackup[count][13];
                         weapons->weaponCompleteDefArr[count]->weapDef->fViewMaxYaw           = valuesSpreadBackup[count][14];
                         weapons->weaponCompleteDefArr[count]->weapDef->adsIdleLerpStartTime  = valuesSpreadBackup[count][15];
@@ -438,7 +303,7 @@ ULONG WINAPI Init()
                         weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadMax        = valuesSpreadBackup[count][18];
                         weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadDecayRate  = valuesSpreadBackup[count][19];
                         weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadFireAdd    = valuesSpreadBackup[count][20];
-                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd    = valuesSpreadBackup[count][21];   // end no spread
+                        weapons->weaponCompleteDefArr[count]->weapDef->slideSpreadTurnAdd    = valuesSpreadBackup[count][21];   
                     }
                 }
             }
@@ -458,19 +323,12 @@ ULONG WINAPI Init()
                 {
                     if(playerState->Health >= 0 && playerState->Health <= 300)
                     {
-                        //playerState->radarEnabled = true;
                         playerState->radarShowEnemyDirection = true;
                         playerState->radarMode = RadarMode::RADAR_MODE_CONSTANT;
                     }
                 }
             }
         }
-
-        /*if (noRecoil)
-        {
-            if(numOfPlayers > 4)
-               NoRecoil();
-        }*/
 
         if (triggerBot)
         {
@@ -495,250 +353,8 @@ ULONG WINAPI Init()
             }
         }
 
-        /*for (auto w : weapons->Weapons)
-        {
-            if (w)
-            {
-                w->iFireDelay = 200;
-                w->iFireDelayAkimbo = 200;
-                w->iFireTime = 200;
-                w->iFireTimeAkimbo = 200;
-                w->sprintOutTimerScale = 1000.0F;
-            }
-        }*/
-
-        //for (auto w : weapons->weaponCompleteDefArr)
-        //{
-            //if (w->weapDef)
-            //{
-                // SPREAD
-                /*w->weapDef->spread = 0.0F;
-                w->weapDef->spread2 = 0.0F;
-                w->weapDef->spread3 = 0.0F;
-                w->weapDef->spread4 = 0.0F;
-                w->weapDef->spread5 = 0.0F;
-                w->weapDef->spread6 = 0.0F;
-                w->weapDef->spread7 = 0.0F;
-                w->weapDef->spread8 = 0.0F;
-                w->weapDef->spread9 = 0.0F;
-                w->weapDef->spread10 = 0.0F;
-                w->weapDef->spread11 = 0.0F;
-                w->weapDef->spread12 = 0.0F;
-                w->weapDef->spread13 = 0.0F;
-                w->weapDef->spread14 = 0.0F;
-                w->weapDef->spread15 = 0.0F;
-                w->weapDef->spread16 = 0.0F;
-                w->weapDef->spread17 = 0.0F;
-                w->weapDef->spread18 = 0.0F;
-                w->weapDef->spread19 = 0.0F;
-                w->weapDef->spread20 = 0.0F;
-                w->weapDef->spread21 = 0.0F;
-                w->weapDef->spread22 = 0.0F;
-                w->weapDef->spread23 = 0.0F;
-                w->weapDef->spread24 = 0.0F;
-                w->weapDef->spread25 = 0.0F;
-                w->weapDef->spread26 = 0.0F;
-                w->weapDef->spread27 = 0.0F;
-                w->weapDef->spread28 = 0.0F;
-                w->weapDef->spread29 = 0.0F;
-                w->weapDef->spread30 = 0.0F;
-                w->weapDef->spread31 = 0.0F;
-                w->weapDef->spread32 = 0.0F;
-                w->weapDef->spread33 = 0.0F;
-                w->weapDef->spread34 = 0.0F;
-                w->weapDef->spread35 = 0.0F;
-                w->weapDef->spread36 = 0.0F;
-                w->weapDef->spread37 = 0.0F;
-                w->weapDef->spread38 = 0.0F;
-                w->weapDef->spread39 = 0.0F;
-                w->weapDef->spread40 = 0.0F;
-                w->weapDef->spread41 = 0.0F;
-                w->weapDef->spread42 = 0.0F;
-                w->weapDef->spread43 = 0.0F;
-                w->weapDef->spread44 = 0.0F;
-                w->weapDef->spread45 = 0.0F;
-                w->weapDef->spread46 = 0.0F;
-                w->weapDef->spread47 = 0.0F;
-                w->weapDef->spread48 = 0.0F;
-                w->weapDef->spread49 = 0.0F;
-                w->weapDef->spread50 = 0.0F;
-                w->weapDef->spread51 = 0.0F;
-                w->weapDef->spread52 = 0.0F;
-                w->weapDef->spread53 = 0.0F;*/
-
-                // CRASH
-                /*w->weapDef->spread54 = 0.0F;
-                w->weapDef->spread55 = 0.0F;
-                w->weapDef->spread56 = 0.0F;
-                w->weapDef->spread57 = 0.0F;
-                w->weapDef->spread58 = 0.0F;
-                w->weapDef->spread59 = 0.0F;
-                w->weapDef->spread60 = 0.0F;
-                w->weapDef->spread61 = 0.0F;
-                w->weapDef->spread62 = 0.0F;
-                w->weapDef->spread63 = 0.0F;
-                w->weapDef->spread64 = 0.0F;
-                w->weapDef->spread65 = 0.0F;
-                w->weapDef->spread66 = 0.0F;
-                w->weapDef->spread67 = 0.0F;
-                w->weapDef->spread68 = 0.0F;
-                w->weapDef->spread69 = 0.0F;
-                w->weapDef->spread70 = 0.0F;
-                w->weapDef->spread71 = 0.0F;
-                w->weapDef->spread72 = 0.0F;
-                w->weapDef->spread73 = 0.0F;
-                w->weapDef->spread74 = 0.0F;
-                w->weapDef->spread75 = 0.0F;
-                w->weapDef->spread76 = 0.0F;
-                w->weapDef->spread77 = 0.0F;
-                w->weapDef->spread78 = 0.0F;
-                w->weapDef->spread79 = 0.0F;
-                w->weapDef->spread80 = 0.0F;
-                w->weapDef->spread81 = 0.0F;
-                w->weapDef->spread82 = 0.0F;
-                w->weapDef->spread83 = 0.0F;
-                w->weapDef->spread84 = 0.0F;
-                w->weapDef->spread85 = 0.0F;
-                w->weapDef->spread86 = 0.0F;
-                w->weapDef->spread87 = 0.0F;
-                w->weapDef->spread88 = 0.0F;
-                w->weapDef->spread89 = 0.0F;
-                w->weapDef->spread90 = 0.0F;
-                w->weapDef->spread91 = 0.0F;*/
-
-                // NO RECOIL
-                /*w->weapDef->spread92 = 0.0F;
-                w->weapDef->spread93 = 0.0F;
-                w->weapDef->spread94 = 0.0F;
-                w->weapDef->spread95 = 0.0F;
-                w->weapDef->spread96 = 0.0F;
-                w->weapDef->spread97 = 0.0F;
-                w->weapDef->spread98 = 0.0F;
-                w->weapDef->spread99 = 0.0F;
-                w->weapDef->spread100 = 0.0F;
-                w->weapDef->spread101 = 0.0F;
-                w->weapDef->spread102 = 0.0F;
-                w->weapDef->spread103 = 0.0F;
-                w->weapDef->spread104 = 0.0F;
-                w->weapDef->spread105 = 0.0F;
-                w->weapDef->spread106 = 0.0F;
-                w->weapDef->spread107 = 0.0F;
-                w->weapDef->spread108 = 0.0F;
-                w->weapDef->spread109 = 0.0F;
-                w->weapDef->spread110 = 0.0F;
-                w->weapDef->spread111 = 0.0F;
-                w->weapDef->spread112 = 0.0F;
-                w->weapDef->spread113 = 0.0F;
-                w->weapDef->spread114 = 0.0F;
-                w->weapDef->spread115 = 0.0F;
-                w->weapDef->spread116 = 0.0F;
-                w->weapDef->spread117 = 0.0F;
-                w->weapDef->spread118 = 0.0F;
-                w->weapDef->spread119 = 0.0F;
-                w->weapDef->spread120 = 0.0F;
-                w->weapDef->spread121 = 0.0F;
-                w->weapDef->spread122 = 0.0F;
-                w->weapDef->spread123 = 0.0F;
-                w->weapDef->spread124 = 0.0F;
-                w->weapDef->spread125 = 0.0F;
-                w->weapDef->spread126 = 0.0F;
-                w->weapDef->spread127 = 0.0F;
-                w->weapDef->spread128 = 0.0F;
-                w->weapDef->spread129 = 0.0F;
-                w->weapDef->spread130 = 0.0F;
-                w->weapDef->spread131 = 0.0F;
-                w->weapDef->spread132 = 0.0F;
-                w->weapDef->spread133 = 0.0F;
-                w->weapDef->spread134 = 0.0F;
-                w->weapDef->spread135 = 0.0F;
-                w->weapDef->spread136 = 0.0F;
-                w->weapDef->spread137 = 0.0F;
-                w->weapDef->spread138 = 0.0F;
-                w->weapDef->spread139 = 0.0F;
-                w->weapDef->spread140 = 0.0F;
-                w->weapDef->spread141 = 0.0F;
-                w->weapDef->spread142 = 0.0F;
-                w->weapDef->spread143 = 0.0F;
-                w->weapDef->spread144 = 0.0F;
-                w->weapDef->spread145 = 0.0F;
-                w->weapDef->spread146 = 0.0F;
-                w->weapDef->spread147 = 0.0F;
-                w->weapDef->spread148 = 0.0F;
-                w->weapDef->spread149 = 0.0F;
-                w->weapDef->spread150 = 0.0F;
-                w->weapDef->spread151 = 0.0F;
-                w->weapDef->spread152 = 0.0F;
-                w->weapDef->spread153 = 0.0F;
-                w->weapDef->spread154 = 0.0F;
-                w->weapDef->spread155 = 0.0F;
-                w->weapDef->spread156 = 0.0F;
-                w->weapDef->spread157 = 0.0F;
-                w->weapDef->spread158 = 0.0F;
-                w->weapDef->spread159 = 0.0F;
-                w->weapDef->spread160 = 0.0F;
-                w->weapDef->spread161 = 0.0F;
-                w->weapDef->spread162 = 0.0F;
-                w->weapDef->spread163 = 0.0F;
-                w->weapDef->spread164 = 0.0F;
-                w->weapDef->spread165 = 0.0F;
-                w->weapDef->spread166 = 0.0F;
-                w->weapDef->spread167 = 0.0F;
-                w->weapDef->spread168 = 0.0F;*/
-
-                // TEST
-                /*w->weapDef->spread169 = 0.0F;
-                w->weapDef->spread170 = 0.0F;
-                w->weapDef->spread171 = 0.0F;
-                w->weapDef->spread172 = 0.0F;
-                w->weapDef->spread173 = 0.0F;
-                w->weapDef->spread174 = 0.0F;
-                w->weapDef->spread175 = 0.0F;
-                w->weapDef->spread176 = 0.0F;
-                w->weapDef->spread177 = 0.0F;
-                w->weapDef->spread178 = 0.0F;
-                w->weapDef->spread179 = 0.0F;
-                w->weapDef->spread180 = 0.0F;
-                w->weapDef->spread181 = 0.0F;
-                w->weapDef->spread182 = 0.0F;
-                w->weapDef->spread183 = 0.0F;
-                w->weapDef->spread184 = 0.0F;
-                w->weapDef->spread185 = 0.0F;
-                w->weapDef->spread186 = 0.0F;
-                w->weapDef->spread187 = 0.0F;
-                w->weapDef->spread188 = 0.0F;
-                w->weapDef->spread189 = 0.0F;
-                w->weapDef->spread190 = 0.0F;
-                w->weapDef->spread191 = 0.0F;
-                w->weapDef->spread192 = 0.0F;
-                w->weapDef->spread193 = 0.0F;
-                w->weapDef->spread194 = 0.0F;
-                w->weapDef->spread195 = 0.0F;
-                w->weapDef->spread196 = 0.0F;
-                w->weapDef->spread197 = 0.0F;
-                w->weapDef->spread198 = 0.0F;
-                w->weapDef->spread199 = 0.0F;
-                w->weapDef->spread200 = 0.0F;
-                w->weapDef->spread201 = 0.0F;
-                w->weapDef->spread202 = 0.0F;
-                w->weapDef->spread203 = 0.0F;
-                w->weapDef->spread204 = 0.0F;
-                w->weapDef->spread205 = 0.0F;
-                w->weapDef->spread206 = 0.0F;
-                w->weapDef->spread207 = 0.0F;
-                w->weapDef->spread208 = 0.0F;*/
-
-
-
-
-            //}
-        //}
-
         Sleep(1);
     }
-
-    //PatchBytes((BYTE*)moduleBase + 0x2983391, (BYTE*)"\x0F\x28\xC3\xF3\x0F\x58\xC7\xF3\x0F\x10\xC8\x66\x0F\x3A\x0A\xD1\x01\xF3\x0F\x5C\xDA\xF3\x41\x0F\x59\xDB\xF3\x0F\x11\x9C\xBE\xDC\x01\x00\x00", 35);
-    //PatchBytes((BYTE*)moduleBase + 0x2A57977, (BYTE*)"\xF3\x0F\x10\xC8\x66\x0F\x3A\x0A\xF1\x01\xF3\x0F\x5C\xFE\x0F\x28\x74\x24\x30\xF3\x0F\x59\x3D\xBA\xD0\xAB\x04\xF3\x0F\x11\xBC\x9F\xDC\x01\x00\x00", 36);
-    //PatchBytes((BYTE*)moduleBase + offsets->GetOffset(Offsets::WRITE_VIEW_ANGLES), (BYTE*)"\x0F\x28\xC6\xF3\x41\x0F\x58\xC0\xF3\x0F\x10\xC8\x66\x0F\x3A\x0A\xD1\x01\xF3\x0F\x5C\xF2\xF3\x41\x0F\x59\xF2\xF3\x0F\x11\xB4\xBB\xDC\x01\x00\x00", 36);
    
     return true;
 }
